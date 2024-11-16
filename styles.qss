@@ -1,0 +1,327 @@
+/* Base Theme */
+QMainWindow {
+    background-color: #f0f0f0;
+}
+
+QGroupBox {
+    border: 1px solid #ccc;
+    margin-top: 1em;
+    border-radius: 4px;
+    padding: 0.5em;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px 0 3px;
+}
+
+QTextEdit {
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 13pt;  /* Increased font size */
+    selection-background-color: #0078d4;
+    selection-color: #ffffff;
+}
+
+QPushButton {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;  /* Make text more readable */
+}
+
+QPushButton:hover {
+    background-color: #106ebe;
+}
+
+QPushButton:pressed {
+    background-color: #004578;
+}
+
+QPushButton:focus {
+    outline: 2px solid #0078d4;
+    outline-offset: 2px;
+}
+
+/* High Contrast Theme */
+.HighContrast {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.HighContrast QGroupBox {
+    border: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+.HighContrast QTextEdit {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    selection-background-color: #ffffff;
+    selection-color: #000000;
+}
+
+.HighContrast QPushButton {
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #ffffff;
+}
+
+.HighContrast QPushButton:hover {
+    background-color: #cccccc;
+}
+
+/* Dark Mode Theme */
+.DarkMode {
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+.DarkMode QGroupBox {
+    border: 2px solid #404040;
+}
+
+.DarkMode QTextEdit {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 2px solid #565656;
+    selection-background-color: #264f78;
+    selection-color: #ffffff;
+}
+
+.DarkMode QPushButton {
+    background-color: #0d47a1;
+    color: #ffffff;
+}
+
+.DarkMode QPushButton:hover {
+    background-color: #1565c0;
+}
+
+/* Colorblind Mode Theme */
+.ColorblindMode {
+    background-color: #f7f7f7;
+    color: #000000;
+}
+
+.ColorblindMode QGroupBox {
+    border: 2px solid #000000;
+}
+
+.ColorblindMode QTextEdit {
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #000000;
+}
+
+.ColorblindMode QPushButton {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #666666;
+}
+
+.ColorblindMode QPushButton:hover {
+    background-color: #333333;
+}
+
+/* Accessibility Theme */
+.AccessibleMode {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.AccessibleMode QGroupBox {
+    border: 3px solid #000000;
+    border-radius: 8px;
+    margin-top: 1.5em;
+    padding: 1em;
+    font-size: 14pt;
+}
+
+.AccessibleMode QTextEdit {
+    background-color: #ffffff;
+    color: #000000;
+    border: 3px solid #000000;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 16pt;
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+}
+
+.AccessibleMode QPushButton {
+    background-color: #005000;
+    color: #ffffff;
+    border: 3px solid #003000;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14pt;
+    font-weight: bold;
+    min-width: 120px;
+    margin: 4px;
+}
+
+.AccessibleMode QPushButton:hover {
+    background-color: #006000;
+}
+
+.AccessibleMode QPushButton:focus {
+    outline: 4px solid #008000;
+    outline-offset: 2px;
+}
+
+.AccessibleMode QComboBox {
+    font-size: 14pt;
+    padding: 8px;
+    border: 3px solid #000000;
+    border-radius: 8px;
+}
+
+.AccessibleMode QLabel {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #000000;
+}
+
+/* Color Blind Safe Theme */
+.ColorBlindSafe {
+    background-color: #ffffff;
+}
+
+.ColorBlindSafe QPushButton {
+    background-color: #0077bb;  /* Blue - distinguishable by color blind users */
+    color: #ffffff;
+}
+
+.ColorBlindSafe QPushButton:hover {
+    background-color: #005599;
+}
+
+.ColorBlindSafe .error-highlight {
+    background-color: #ddaa00;  /* Yellow - better for color blind users than red */
+}
+
+.ColorBlindSafe .success-highlight {
+    background-color: #009988;  /* Teal - better for color blind users than green */
+}
+
+/* Common Controls Styling */
+QComboBox, QSpinBox {
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QComboBox:focus, QSpinBox:focus {
+    border: 2px solid #0078d4;
+    outline: none;
+}
+
+QProgressBar {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #0078d4;
+}
+
+/* Status Bar */
+QStatusBar {
+    border-top: 1px solid #cccccc;
+    min-height: 25px;
+}
+
+/* Enhanced Accessibility Styles */
+.DyslexiaMode {
+    background-color: #f5f5dc;
+    line-height: 1.5;
+}
+
+.DyslexiaMode QTextEdit {
+    background-color: #fffff0;
+    color: #000000;
+    font-family: "OpenDyslexic", "Arial";
+    line-height: 1.8;
+    letter-spacing: 0.1em;
+    word-spacing: 0.3em;
+}
+
+.MotorAssistMode {
+    padding: 8px;
+}
+
+.MotorAssistMode QPushButton {
+    min-height: 40px;
+    min-width: 120px;
+    margin: 5px;
+}
+
+.MotorAssistMode QComboBox {
+    min-height: 35px;
+}
+
+/* Pattern Highlighting */
+.RepeatedKeys {
+    background-color: #ff8c8c;
+    border-radius: 3px;
+}
+
+.AdjacentKeyError {
+    background-color: #70dd70;
+    border-radius: 3px;
+}
+
+.SwappedLetters {
+    background-color: #5fb5e6;
+    border-radius: 3px;
+}
+
+.CognitivePattern {
+    background-color: #d670d6;
+    border-radius: 3px;
+}
+
+/* Word Prediction Panel */
+.PredictionPanel {
+    background-color: #ffffff;
+    border: 2px solid #bbb;
+    border-radius: 5px;
+    padding: 8px;
+    margin-top: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.PredictionPanel QLabel {
+    color: #005a9e;
+    padding: 5px;
+    font-weight: bold;
+}
+
+/* Menu Styling */
+QMenuBar {
+    background-color: #f8f8f8;
+}
+
+QMenuBar::item:selected {
+    background-color: #0078d4;
+    color: white;
+}
+
+QMenu {
+    background-color: white;
+    border: 1px solid #ccc;
+}
+
+QMenu::item:selected {
+    background-color: #0078d4;
+    color: white;
+}

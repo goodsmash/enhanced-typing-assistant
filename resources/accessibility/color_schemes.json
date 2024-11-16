@@ -1,0 +1,24 @@
+
+{
+    "deuteranopia": {
+        "background": "#FFFFFF",
+        "text": "#000000",
+        "highlight": "#0077BB",
+        "error": "#DD0000",
+        "success": "#00AA00"
+    },
+    "protanopia": {
+        "background": "#FFFFFF",
+        "text": "#000000",
+        "highlight": "#00BBFF",
+        "error": "#AA0000",
+        "success": "#00CC00"
+    },
+    "tritanopia": {
+        "background": "#FFFFFF",
+        "text": "#000000",
+        "highlight": "#FF6600",
+        "error": "#CC0000",
+        "success": "#008800"
+    }
+}

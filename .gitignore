@@ -1,0 +1,51 @@
+# Environment and keys
+.env
+.env.*
+key.key
+*.key
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Build and Distribution
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Database and Logs
+*.db
+*.sqlite3
+*.log
+logs/
+typing_assistant.db
+typing_assistant.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Test Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Temporary files
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db

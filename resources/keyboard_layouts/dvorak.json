@@ -1,0 +1,19 @@
+
+{
+    "name": "Dvorak",
+    "layout": "dvorak",
+    "characters": {
+        "normal": {
+            "row1": "`1234567890[]",
+            "row2": "',.pyfgcrl/=\\",
+            "row3": "aoeuidhtns-",
+            "row4": ";qjkxbmwvz"
+        },
+        "shift": {
+            "row1": "~!@#$%^&*(){}", 
+            "row2": "\"<>PYFGCRL?+|",
+            "row3": "AOEUIDHTNS_",
+            "row4": ":QJKXBMWVZ"
+        }
+    }
+}

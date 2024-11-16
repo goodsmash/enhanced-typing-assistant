@@ -1,0 +1,62 @@
+# Core dependencies
+PyQt5>=5.15.9
+pyqtwebengine>=5.15.6
+pyenchant>=3.2.2
+nltk>=3.8.1
+thefuzz>=0.19.0
+python-Levenshtein>=0.21.1
+rapidfuzz>=3.1.1
+transformers>=4.30.2
+torch>=2.0.1
+tqdm>=4.65.0
+
+# Text processing and ML
+scikit-learn>=1.3.0
+numpy>=1.24.3
+pandas>=2.0.3
+spacy>=3.5.3
+openai>=1.0.0
+tiktoken>=0.5.1
+
+# Speech recognition and synthesis
+SpeechRecognition>=3.10.0
+pyttsx3>=2.90
+pyaudio>=0.2.13
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+cryptography>=41.0.3
+pytest>=7.4.0
+black>=23.7.0
+isort>=5.12.0
+flake8>=6.1.0
+mypy>=1.5.1
+pylint>=2.17.4
+psutil>=5.9.5
+colorama>=0.4.6
+
+# Security and configuration
+keyring>=24.2.0
+appdirs>=1.4.4
+PyJWT>=2.8.0
+configparser>=6.0.0
+argon2-cffi>=23.1.0
+
+# Database and caching
+SQLAlchemy>=2.0.17
+redis>=4.6.0
+aioredis>=2.0.1
+sqlite3worker>=1.1.7
+
+# Documentation
+sphinx>=7.0.1
+sphinx-rtd-theme>=1.2.2
+autodoc>=0.5.0
+
+# Development tools
+pre-commit>=3.3.3
+coverage>=7.2.7
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.1
+pytest-qt>=4.2.0

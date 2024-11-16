@@ -1,0 +1,29 @@
+
+{
+    "font_settings": {
+        "default_font": "Arial",
+        "dyslexic_font": "OpenDyslexic",
+        "min_size": 8,
+        "max_size": 72,
+        "default_size": 12
+    },
+    "color_schemes": {
+        "default": {
+            "background": "#FFFFFF",
+            "text": "#000000"
+        },
+        "high_contrast": {
+            "background": "#000000",
+            "text": "#FFFFFF"
+        },
+        "dyslexic_friendly": {
+            "background": "#FFF2CC",
+            "text": "#333333"
+        }
+    },
+    "text_spacing": {
+        "letter_spacing": 0.12,
+        "line_height": 1.5,
+        "paragraph_spacing": 2.0
+    }
+}

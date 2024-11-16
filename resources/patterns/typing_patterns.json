@@ -1,0 +1,38 @@
+{
+    "common_patterns": {
+        "double_letters": ["ll", "ee", "ss", "oo"],
+        "trigraphs": ["the", "and", "ing", "ion"],
+        "prefixes": ["un", "re", "in", "dis"],
+        "suffixes": ["ing", "ed", "ly", "tion"],
+        "tremor_patterns": {
+            "key_holds": ["aaa", "sss", "ddd", "fff"],
+            "bounce_keys": ["a a", "s s", "d d", "f f"],
+            "delayed_release": ["aaaa", "ssss", "dddd", "ffff"]
+        },
+        "motor_patterns": {
+            "adjacent_hits": ["qw", "as", "zx", "op", "kl"],
+            "diagonal_slips": ["qz", "ws", "ed", "rf"],
+            "accidental_modifiers": ["shift+", "ctrl+", "alt+"]
+        },
+        "cognitive_patterns": {
+            "phonetic_substitutions": ["f/ph", "k/c", "s/c"],
+            "visual_similarities": ["b/d", "p/q", "m/n", "h/n"],
+            "semantic_confusions": ["there/their/they're", "to/too/two"]
+        }
+    },
+    "error_patterns": {
+        "transpositions": ["ie/ei", "th/ht", "on/no"],
+        "substitutions": ["f/v", "b/p", "d/t"],
+        "omissions": ["ing$", "ed$", "^h"],
+        "motor_difficulties": {
+            "repeated_keys": ["[a-z]\\1{2,}"],
+            "key_bouncing": ["([a-z])\\s+\\1"],
+            "missed_keys": ["([a-z])[^a-z]+\\1"]
+        },
+        "cognitive_assistance": {
+            "word_prediction": ["\\b[a-z]{1,3}"],
+            "context_aware": ["\\b[a-z]+ing\\b", "\\b[a-z]+ed\\b"],
+            "phonetic_matching": ["^[aeiou]", "[aeiou]{2,}"]
+        }
+    }
+}

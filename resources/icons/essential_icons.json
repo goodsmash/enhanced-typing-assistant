@@ -1,0 +1,14 @@
+
+{
+    "required_icons": [
+        "play.png",
+        "pause.png", 
+        "stop.png",
+        "settings.png",
+        "font.png",
+        "color.png",
+        "keyboard.png",
+        "microphone.png",
+        "volume.png"
+    ]
+}

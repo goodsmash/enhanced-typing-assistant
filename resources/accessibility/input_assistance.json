@@ -1,0 +1,33 @@
+
+{
+    "motor_assistance": {
+        "key_debounce_time": 300,
+        "key_repeat_delay": 500,
+        "minimum_press_time": 50,
+        "double_press_interval": 400
+    },
+    "visual_assistance": {
+        "key_highlight_duration": 1000,
+        "key_size_multiplier": 1.5,
+        "contrast_enhancement": true,
+        "motion_tracking": true
+    },
+    "cognitive_assistance": {
+        "word_prediction_delay": 800,
+        "suggestion_limit": 5,
+        "context_awareness": true,
+        "simplified_interface": true
+    },
+    "tremor_compensation": {
+        "smoothing_factor": 0.7,
+        "minimum_movement": 5,
+        "stabilization_delay": 200,
+        "jitter_threshold": 3
+    },
+    "timing_adjustments": {
+        "slow_keys": true,
+        "slow_keys_delay": 300,
+        "bounce_keys": true,
+        "bounce_keys_delay": 300
+    }
+}

@@ -1,0 +1,40 @@
+/* resources/styles_high_contrast.qss */
+
+QMainWindow {
+    background-color: #000000;
+}
+
+QTextEdit {
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #ffff00;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+QPushButton {
+    background-color: #ffff00;
+    color: #000000;
+    border: 2px solid #ffffff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    background-color: #ffea00;
+}
+
+QLabel {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+QComboBox, QLineEdit {
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #ffff00;
+    border-radius: 4px;
+    padding: 5px 10px;
+}

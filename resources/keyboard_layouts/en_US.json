@@ -1,0 +1,19 @@
+
+{
+    "name": "English (US)",
+    "layout": "qwerty",
+    "characters": {
+        "normal": {
+            "row1": "`1234567890-=",
+            "row2": "qwertyuiop[]\\",
+            "row3": "asdfghjkl;'",
+            "row4": "zxcvbnm,./"
+        },
+        "shift": {
+            "row1": "~!@#$%^&*()_+",
+            "row2": "QWERTYUIOP{}|",
+            "row3": "ASDFGHJKL:\"",
+            "row4": "ZXCVBNM<>?"
+        }
+    }
+}

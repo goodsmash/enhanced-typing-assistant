@@ -1,0 +1,19 @@
+
+{
+    "common_mistakes": {
+        "teh": "the",
+        "adn": "and",
+        "recieve": "receive",
+        "seperate": "separate"
+    },
+    "auto_capitalize": [
+        "i",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+    ]
+}

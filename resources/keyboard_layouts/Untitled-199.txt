@@ -1,0 +1,17 @@
+KEYBOARD_LAYOUT: WESTERN
+======================
+
+BASE_LAYOUT:
+QWERTYUIOP
+ASDFGHJKL;
+ZXCVBNM,./
+
+SHIFT_LAYOUT:
+~!@#$%^&*()
+QWERTYUIOP
+ASDFGHJKL:"
+ZXCVBNM<>?
+
+ALT_LAYOUT:
+// Special characters and diacritics
+áéíóúñ¿¡äëï
