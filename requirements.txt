@@ -5,7 +5,7 @@ pyenchant>=3.2.2
 nltk>=3.8.1
 thefuzz>=0.19.0
 python-Levenshtein>=0.21.1
-rapidfuzz>=3.1.1
+rapidfuzz>=2.13.7
 transformers>=4.30.2
 torch>=2.0.1
 tqdm>=4.65.0
@@ -17,6 +17,8 @@ pandas>=2.0.3
 spacy>=3.5.3
 openai>=1.0.0
 tiktoken>=0.5.1
+allennlp>=2.10.1  # Added for GECToR
+datasets>=2.14.0  # Added for training data handling
 
 # Speech recognition and synthesis
 SpeechRecognition>=3.10.0
@@ -35,6 +37,7 @@ mypy>=1.5.1
 pylint>=2.17.4
 psutil>=5.9.5
 colorama>=0.4.6
+pathlib>=1.0.1
 
 # Security and configuration
 keyring>=24.2.0
