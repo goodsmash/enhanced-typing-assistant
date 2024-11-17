@@ -9,12 +9,13 @@ from typing import Optional
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                           QTextEdit, QLabel, QPushButton, QComboBox, QHBoxLayout,
                           QMessageBox, QShortcut, QMenuBar, QMenu, QAction, QToolBar,
-                          QDockWidget, QFrame, QSplitter, QSlider, QSpinBox)
+                          QDockWidget, QFrame, QSplitter, QSlider, QSpinBox, QDialog)
 from PyQt5.QtCore import Qt, QTimer, QSettings
 from PyQt5.QtGui import QFont, QPalette, QColor, QIcon, QKeySequence
 
 from .core.text_processor import TextProcessor
 from .core.speech_handler import SpeechHandler
+from .core.api_client import APIClient
 from .utils.config_manager import ConfigManager
 from .utils.theme_manager import ThemeManager
 from .ui.accessibility import AccessibilityManager
@@ -206,16 +207,8 @@ class TypingAssistantApp(QMainWindow):
     def process_text(self, text: str) -> str:
         """Process text with appropriate mode."""
         try:
-            if self.config_manager.is_offline_mode():
-                # Use offline processing
-                return self.text_processor.process_offline(text)
-            else:
-                # Use online API-based processing
-                return self.text_processor.process_online(
-                    text,
-                    self.api_client
-                )
-                
+            # Use the enhance_text method which handles both online and offline modes
+            return self.text_processor.enhance_text(text)
         except Exception as e:
             logger.error(f"Error processing text: {e}", exc_info=True)
             self.handle_processing_error()
@@ -601,9 +594,14 @@ class TypingAssistantApp(QMainWindow):
 
     def change_mode(self, mode):
         """Change the correction mode with accessibility announcement."""
-        self.text_processor.correction_mode = mode.lower()
-        self.mode_combo.setAccessibleDescription(f'Selected mode: {mode}')
-        self.correct_text()
+        # Convert mode to lowercase and ensure it's a valid mode
+        mode_lower = mode.lower()
+        if mode_lower in ["standard", "strict", "creative", "ai"]:
+            self.text_processor.set_correction_mode(mode_lower)
+            self.mode_combo.setAccessibleDescription(f'Selected mode: {mode}')
+            self.correct_text()
+        else:
+            logger.error(f"Invalid correction mode: {mode}")
 
     def clear_text(self):
         """Clear both input and output text with accessibility."""

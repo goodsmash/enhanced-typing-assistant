@@ -74,7 +74,12 @@ class ConfigManager:
             "speech_rate": 200,
             "correction_mode": "standard",
             "correction_severity": 0.5,
-            "language": "en_US"
+            "language": "en_US",
+            "model": "gpt-3.5-turbo",
+            "temperature": 0.7,
+            "max_tokens": 150,
+            "frequency_penalty": 0.0,
+            "presence_penalty": 0.0
         }
         self.save()
 
@@ -149,3 +154,26 @@ class ConfigManager:
         """Set interface language."""
         self.config["language"] = language
         self.save()
+
+    def get_api_settings(self) -> Dict[str, Any]:
+        """Get API connection settings."""
+        return {
+            "model": self.config.get("model", "gpt-3.5-turbo"),
+            "temperature": self.config.get("temperature", 0.7),
+            "max_tokens": self.config.get("max_tokens", 150),
+            "frequency_penalty": self.config.get("frequency_penalty", 0.0),
+            "presence_penalty": self.config.get("presence_penalty", 0.0)
+        }
+
+    def set_api_settings(self, settings: Dict[str, Any]) -> None:
+        """Set API connection settings."""
+        valid_keys = ["model", "temperature", "max_tokens", "frequency_penalty", "presence_penalty"]
+        for key, value in settings.items():
+            if key in valid_keys:
+                self.config[key] = value
+        self.save()
+
+    def is_authenticated(self) -> bool:
+        """Check if user is authenticated."""
+        api_key = self.get_api_key()
+        return bool(api_key and len(api_key) > 0)

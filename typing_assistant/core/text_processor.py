@@ -9,11 +9,12 @@ from pathlib import Path
 from collections import defaultdict
 import time
 
-import openai
 import enchant
 from nltk.tokenize import word_tokenize
 from nltk.corpus import words
 from thefuzz import fuzz
+
+from .api_client import APIClient
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +31,13 @@ class TextProcessor:
             self.common_patterns = self._load_common_patterns()
             self.user_dictionary = defaultdict(int)
             
-            # AI settings
+            # API client setup
             self.api_key = api_key
             self.model = model
             if api_key:
-                openai.api_key = api_key
+                self.api_client = APIClient(api_key)
+            else:
+                self.api_client = None
             self.last_ai_call = 0
             self.ai_cooldown = 2.0  # Seconds between AI calls
             
@@ -250,18 +253,13 @@ class TextProcessor:
                 Previous context: {context}
                 Text to correct: {text}"""
             
-            # Call GPT with specified model
-            response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant that corrects text while preserving meaning."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                max_tokens=150
-            )
-            
-            corrected_text = response.choices[0].message.content.strip()
+            # Call API client with specified model
+            result = self.process_with_ai(prompt)
+            if result["success"]:
+                corrected_text = result["text"]
+            else:
+                logger.error(f"AI correction failed: {result['error']}")
+                corrected_text = text
             
             # Learn from the correction if enabled
             if self.learning_enabled:
@@ -273,6 +271,31 @@ class TextProcessor:
         except Exception as e:
             logger.error(f"Error in AI text enhancement: {e}", exc_info=True)
             return text
+
+    def process_with_ai(self, text: str) -> Dict[str, Any]:
+        """Process text using AI for enhanced correction and suggestions."""
+        if not self.api_client:
+            return {
+                "success": False,
+                "error": "API client not initialized. Please provide an API key."
+            }
+            
+        # Rate limiting
+        current_time = time.time()
+        if current_time - self.last_ai_call < self.ai_cooldown:
+            time.sleep(self.ai_cooldown - (current_time - self.last_ai_call))
+            
+        try:
+            result = self.api_client.process_text(text, mode=self.correction_mode)
+            self.last_ai_call = time.time()
+            return result
+            
+        except Exception as e:
+            logger.error(f"AI processing failed: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
 
     def _learn_from_correction(self, original: str, corrected: str) -> None:
         """Learn from corrections to improve future suggestions."""
