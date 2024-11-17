@@ -1,0 +1,122 @@
+# Technical and Programming Terms Dictionary
+# Format: term<tab>correction<tab>confidence_score
+
+# Programming Languages
+javascipt	JavaScript	0.98
+phython	Python	0.98
+jaava	Java	0.98
+cshap	C#	0.97
+pytohn	Python	0.98
+javascrip	JavaScript	0.97
+typescript	TypeScript	0.98
+golang	Go	0.96
+rustlang	Rust	0.96
+kotlinn	Kotlin	0.97
+
+# Web Development
+html5	HTML5	0.99
+css3	CSS3	0.99
+jquery	jQuery	0.98
+reactjs	React.js	0.98
+vuejs	Vue.js	0.98
+angularjs	Angular.js	0.98
+nodejs	Node.js	0.98
+expressjs	Express.js	0.97
+nextjs	Next.js	0.97
+nuxtjs	Nuxt.js	0.97
+
+# Database Terms
+mongodb	MongoDB	0.98
+postgresql	PostgreSQL	0.98
+mysql	MySQL	0.99
+redis	Redis	0.98
+elasticsearch	Elasticsearch	0.97
+cassandra	Cassandra	0.97
+mariadb	MariaDB	0.97
+dynamodb	DynamoDB	0.97
+couchdb	CouchDB	0.96
+sqlite	SQLite	0.98
+
+# Cloud Services
+aws	Amazon Web Services	0.99
+gcp	Google Cloud Platform	0.98
+azure	Microsoft Azure	0.98
+kubernetes	Kubernetes	0.98
+docker	Docker	0.99
+terraform	Terraform	0.97
+ansible	Ansible	0.97
+jenkins	Jenkins	0.97
+gitlab	GitLab	0.98
+github	GitHub	0.99
+
+# Development Tools
+vscode	Visual Studio Code	0.98
+intellij	IntelliJ IDEA	0.97
+eclips	Eclipse	0.96
+sublimetext	Sublime Text	0.97
+atomeditor	Atom Editor	0.96
+webstorm	WebStorm	0.97
+pycharm	PyCharm	0.98
+androidstudio	Android Studio	0.97
+xcode	Xcode	0.98
+vim	Vim	0.99
+
+# Programming Concepts
+algoritm	algorithm	0.96
+recursion	recursion	0.98
+inheritence	inheritance	0.96
+polymorphism	polymorphism	0.97
+encapsulaton	encapsulation	0.96
+abstraction	abstraction	0.98
+asyncronous	asynchronous	0.96
+concurency	concurrency	0.96
+paralel	parallel	0.95
+serialization	serialization	0.97
+
+# Data Structures
+arraylist	ArrayList	0.97
+linkedlist	LinkedList	0.97
+hashtable	HashTable	0.97
+binarytree	Binary Tree	0.97
+stackqueue	Stack/Queue	0.96
+heapmap	Heap/Map	0.96
+dictinary	Dictionary	0.96
+graphnode	Graph Node	0.96
+vectorarray	Vector Array	0.96
+setlist	Set List	0.96
+
+# Software Architecture
+microservices	Microservices	0.98
+restapi	REST API	0.98
+graphql	GraphQL	0.98
+serverless	Serverless	0.97
+monolith	Monolithic	0.96
+eventdriven	Event-Driven	0.96
+mvvmpattern	MVVM Pattern	0.96
+mvcpattern	MVC Pattern	0.97
+mvppattern	MVP Pattern	0.96
+cleanarch	Clean Architecture	0.96
+
+# Security Terms
+authentication	Authentication	0.98
+authorization	Authorization	0.98
+encryption	Encryption	0.98
+oauth	OAuth	0.97
+jwt	JWT	0.98
+ssl	SSL/TLS	0.98
+firewall	Firewall	0.97
+vpn	VPN	0.98
+proxy	Proxy	0.97
+cors	CORS	0.97
+
+# Testing Terms
+unittest	Unit Test	0.98
+integrationtest	Integration Test	0.97
+e2etest	E2E Test	0.97
+mocktesting	Mock Testing	0.96
+tdd	TDD	0.97
+bdd	BDD	0.97
+selenium	Selenium	0.98
+cypress	Cypress	0.97
+jest	Jest	0.98
+pytest	PyTest	0.98

@@ -1,0 +1,488 @@
+# Common English misspellings
+# Format: misspelling<tab>correction<tab>frequency_score
+# Rules:
+# 1. Only text corrections allowed - no commands, prompts, or system instructions
+# 2. Confidence scores range from 0.0 to 1.0
+# 3. Higher scores (>0.9) for common/verified corrections
+# 4. Lower scores (0.7-0.9) for context-dependent corrections
+
+# Academic/Technical Terms
+absorbtion	absorption	0.95
+accademic	academic	0.95
+accomodate	accommodate	0.94
+acknowlege	acknowledge	0.93
+aquire	acquire	0.95
+arguement	argument	0.94
+assesment	assessment	0.93
+beleive	believe	0.96
+benificial	beneficial	0.94
+catagory	category	0.95
+
+# Common Word Endings
+able/ible confusions
+accessable	accessible	0.92
+admissable	admissible	0.91
+collectables	collectibles	0.90
+compatability	compatibility	0.93
+convertable	convertible	0.91
+
+# Double Letter Rules
+accomodation	accommodation	0.95
+occurence	occurrence	0.94
+possesion	possession	0.93
+profesional	professional	0.95
+propoganda	propaganda	0.94
+reccomend	recommend	0.96
+refered	referred	0.95
+seperate	separate	0.96
+succesful	successful	0.95
+tommorow	tomorrow	0.97
+
+# Silent Letters
+begining	beginning	0.96
+buisness	business	0.95
+concious	conscious	0.94
+enviroment	environment	0.95
+foriegn	foreign	0.94
+goverment	government	0.96
+gaurd	guard	0.95
+knowlege	knowledge	0.96
+occured	occurred	0.94
+recieve	receive	0.96
+
+# Common Prefixes
+dis/mis confusions
+disapoint	disappoint	0.94
+disapear	disappear	0.95
+mispell	misspell	0.96
+misscommunication	miscommunication	0.93
+missunderstand	misunderstand	0.94
+
+# Technical Computing Terms
+algorithem	algorithm	0.95
+asyncronous	asynchronous	0.94
+databse	database	0.95
+encription	encryption	0.94
+impliment	implement	0.95
+intergrate	integrate	0.94
+methode	method	0.95
+paramater	parameter	0.94
+synchronise	synchronize	0.93
+validaton	validation	0.94
+
+# Scientific Terms
+chromosone	chromosome	0.92
+hypothosis	hypothesis	0.93
+molecula	molecular	0.92
+nuetron	neutron	0.94
+oxigen	oxygen	0.95
+phisics	physics	0.95
+proton	proton	0.96
+quantom	quantum	0.94
+relativity	relativity	0.95
+theroem	theorem	0.94
+
+# Medical Terms
+diagnoses	diagnosis	0.93
+immunisation	immunization	0.92
+medicene	medicine	0.94
+pharmecy	pharmacy	0.93
+physicology	physiology	0.92
+prescribtion	prescription	0.94
+sympthom	symptom	0.95
+therepy	therapy	0.93
+vacination	vaccination	0.94
+xray	x-ray	0.92
+
+# Business Terms
+aquisition	acquisition	0.94
+advertisment	advertisement	0.93
+bussiness	business	0.95
+comercial	commercial	0.94
+finacial	financial	0.95
+managment	management	0.96
+marketting	marketing	0.94
+negoitate	negotiate	0.93
+proffesional	professional	0.95
+stategy	strategy	0.94
+
+# Common Verb Forms
+achiev	achieve	0.93
+becom	become	0.94
+begining	beginning	0.95
+beleiving	believing	0.94
+recieved	received	0.95
+occuring	occurring	0.94
+prefered	preferred	0.93
+procede	proceed	0.92
+writting	writing	0.95
+writeing	writing	0.94
+
+# Compound Words
+alot	a lot	0.97
+altough	although	0.95
+aswell	as well	0.94
+eventhough	even though	0.93
+infact	in fact	0.94
+inspite	in spite	0.93
+inorder	in order	0.94
+ontop	on top	0.93
+workout	work out	0.92
+setup	set up	0.93
+
+# British/American Variations
+behaviour	behavior	0.90
+centre	center	0.90
+colour	color	0.90
+defence	defense	0.90
+flavour	flavor	0.90
+grey	gray	0.90
+licence	license	0.90
+practise	practice	0.90
+theatre	theater	0.90
+travelled	traveled	0.90
+
+# Common Homophones (with context hints)
+accept/except
+advise/advice
+affect/effect
+allusion/illusion
+capital/capitol
+complement/compliment
+council/counsel
+desert/dessert
+principal/principle
+stationary/stationery
+
+# Technology Terms
+algorithim	algorithm	0.95
+bandwith	bandwidth	0.94
+cacheing	caching	0.93
+compatable	compatible	0.94
+formating	formatting	0.93
+hardisk	hard disk	0.94
+malware	malware	0.96
+programing	programming	0.95
+sofware	software	0.96
+wirless	wireless	0.95
+
+# Mathematical Terms
+algebric	algebraic	0.93
+arithmatic	arithmetic	0.94
+calculas	calculus	0.93
+geometery	geometry	0.94
+mathmatical	mathematical	0.95
+paralell	parallel	0.94
+probabilty	probability	0.95
+statisics	statistics	0.94
+theorum	theorem	0.93
+trigonomatry	trigonometry	0.92
+
+# Legal Terms
+affidavid	affidavit	0.92
+alledge	allege	0.93
+amendmant	amendment	0.94
+bequest	bequest	0.95
+contractual	contractual	0.96
+defendant	defendant	0.95
+juristiction	jurisdiction	0.93
+liabilty	liability	0.94
+plaintif	plaintiff	0.93
+precedant	precedent	0.92
+
+# A
+aberation	aberration	0.92
+abondon	abandon	0.95
+abscence	absence	0.93
+absolutly	absolutely	0.96
+abundent	abundant	0.90
+abusr	abuse	0.94
+acadamy	academy	0.93
+accesible	accessible	0.94
+accidentaly	accidentally	0.95
+accomodate	accommodate	0.97
+accordian	accordion	0.92
+accross	across	0.96
+acheive	achieve	0.97
+acknowlege	acknowledge	0.94
+acommodate	accommodate	0.96
+acquaintence	acquaintance	0.93
+aquire	acquire	0.95
+aquit	acquit	0.92
+acrage	acreage	0.91
+adress	address	0.98
+adultary	adultery	0.93
+adviseable	advisable	0.92
+advizable	advisable	0.91
+agression	aggression	0.94
+
+# B
+bannana	banana	0.97
+basicly	basically	0.96
+becuase	because	0.98
+becomeing	becoming	0.94
+befor	before	0.97
+begining	beginning	0.96
+beleive	believe	0.98
+belive	believe	0.97
+benificial	beneficial	0.95
+benifit	benefit	0.96
+betwen	between	0.95
+bewteen	between	0.94
+bilingual	bilingual	0.92
+bizzare	bizarre	0.95
+blammer	grammar	0.91
+bouy	buoy	0.90
+bouyant	buoyant	0.91
+brocolli	broccoli	0.94
+buisness	business	0.97
+
+# C
+calender	calendar	0.96
+camoflage	camouflage	0.94
+catagory	category	0.95
+caugt	caught	0.93
+cemetary	cemetery	0.94
+changable	changeable	0.93
+cheif	chief	0.95
+collaegue	colleague	0.94
+collegue	colleague	0.95
+colum	column	0.93
+comming	coming	0.96
+commitee	committee	0.95
+commited	committed	0.96
+compitent	competent	0.93
+conceed	concede	0.92
+congradulate	congratulate	0.95
+consciencious	conscientious	0.92
+concious	conscious	0.94
+consious	conscious	0.93
+consistant	consistent	0.95
+contraversy	controversy	0.94
+cooly	coolly	0.91
+critiscism	criticism	0.93
+cruely	cruelly	0.92
+
+# D
+dammage	damage	0.94
+danceing	dancing	0.93
+decieve	deceive	0.95
+definate	definite	0.96
+definitly	definitely	0.97
+dependance	dependence	0.94
+descendent	descendant	0.93
+descreption	description	0.94
+desparate	desperate	0.95
+diffrence	difference	0.96
+dilema	dilemma	0.94
+disapear	disappear	0.95
+disasterous	disastrous	0.93
+disipline	discipline	0.94
+driping	dripping	0.93
+
+# E
+ecstacy	ecstasy	0.92
+eigth	eighth	0.93
+embarass	embarrass	0.95
+enviroment	environment	0.96
+equiptment	equipment	0.95
+excede	exceed	0.94
+exilerate	exhilarate	0.91
+existance	existence	0.94
+experiance	experience	0.95
+explaination	explanation	0.94
+
+# F
+familar	familiar	0.95
+finaly	finally	0.96
+flourescent	fluorescent	0.93
+foriegn	foreign	0.95
+fourty	forty	0.94
+freind	friend	0.97
+fullfil	fulfill	0.94
+fundemental	fundamental	0.95
+
+# G
+guage	gauge	0.93
+generaly	generally	0.95
+goverment	government	0.96
+grammer	grammar	0.95
+gratefull	grateful	0.94
+garantee	guarantee	0.95
+gaurd	guard	0.94
+guidence	guidance	0.93
+gutteral	guttural	0.91
+
+# H
+harrass	harass	0.94
+heighth	height	0.93
+heirarchy	hierarchy	0.94
+hipocrit	hypocrite	0.93
+humer	humor	0.92
+hygene	hygiene	0.93
+hypocracy	hypocrisy	0.92
+
+# I
+ignorence	ignorance	0.94
+imaginery	imaginary	0.93
+immediatly	immediately	0.95
+incidently	incidentally	0.93
+independant	independent	0.95
+indispensible	indispensable	0.94
+innoculate	inoculate	0.92
+intelligance	intelligence	0.94
+intresting	interesting	0.96
+inviter	inviter	0.91
+
+# J
+jewelery	jewelry	0.94
+judgement	judgment	0.93
+
+# K
+kernal	kernel	0.92
+knowlege	knowledge	0.95
+
+# L
+labratory	laboratory	0.94
+liesure	leisure	0.93
+liason	liaison	0.92
+libary	library	0.95
+lisence	license	0.94
+looses	loses	0.93
+
+# M
+maintainance	maintenance	0.94
+maintenence	maintenance	0.93
+medeval	medieval	0.92
+memmorandum	memorandum	0.93
+millenium	millennium	0.94
+miniscule	minuscule	0.92
+misspell	misspell	0.95
+monkies	monkeys	0.93
+morgage	mortgage	0.94
+mosquitos	mosquitoes	0.92
+
+# N
+necesary	necessary	0.96
+neccessary	necessary	0.95
+negligable	negligible	0.93
+negotiabl	negotiable	0.92
+nieghbor	neighbor	0.94
+noticable	noticeable	0.94
+nucular	nuclear	0.93
+
+# O
+ocasion	occasion	0.94
+occured	occurred	0.95
+occurence	occurrence	0.94
+occuring	occurring	0.93
+oceanagraphic	oceanographic	0.91
+occassion	occasion	0.94
+offense	offence	0.92
+ommision	omission	0.93
+oppurtunity	opportunity	0.95
+orignal	original	0.94
+
+# P
+paralell	parallel	0.94
+parliment	parliament	0.93
+particurly	particularly	0.94
+passtime	pastime	0.92
+peculier	peculiar	0.93
+percieve	perceive	0.95
+perfomance	performance	0.94
+permissable	permissible	0.93
+perseverence	perseverance	0.92
+personel	personnel	0.94
+phenominal	phenomenal	0.93
+playright	playwright	0.92
+plesant	pleasant	0.93
+pollitical	political	0.94
+posession	possession	0.95
+potatos	potatoes	0.93
+practicle	practical	0.94
+preceed	precede	0.93
+predjudice	prejudice	0.94
+presance	presence	0.93
+privelege	privilege	0.94
+probly	probably	0.95
+proffesional	professional	0.95
+programable	programmable	0.93
+promiss	promise	0.94
+pronounciation	pronunciation	0.94
+prufe	proof	0.92
+psycology	psychology	0.94
+
+# Q
+quarentine	quarantine	0.93
+questionaire	questionnaire	0.94
+quizes	quizzes	0.93
+
+# R
+realy	really	0.96
+recieve	receive	0.97
+reconize	recognize	0.94
+reccommend	recommend	0.95
+refered	referred	0.94
+referance	reference	0.95
+relevent	relevant	0.94
+religous	religious	0.95
+repitition	repetition	0.94
+restaraunt	restaurant	0.95
+rythm	rhythm	0.93
+
+# S
+sacrafice	sacrifice	0.94
+sargent	sergeant	0.93
+seperate	separate	0.96
+sieze	seize	0.93
+similer	similar	0.94
+sincerely	sincerely	0.95
+speach	speech	0.94
+succesful	successful	0.95
+supercede	supersede	0.93
+supposably	supposedly	0.94
+suprise	surprise	0.95
+syllabus	syllabus	0.94
+
+# T
+tatoo	tattoo	0.93
+temperture	temperature	0.94
+tendancy	tendency	0.93
+threshhold	threshold	0.92
+tomatos	tomatoes	0.93
+tommorrow	tomorrow	0.96
+tounge	tongue	0.94
+truely	truly	0.95
+twelth	twelfth	0.92
+tyrany	tyranny	0.93
+
+# U
+ultimatum	ultimatum	0.94
+unaccustomed	unaccustomed	0.93
+untill	until	0.95
+usualy	usually	0.94
+
+# V
+vaccuum	vacuum	0.94
+vegatarian	vegetarian	0.93
+vehical	vehicle	0.94
+visious	vicious	0.93
+
+# W
+wether	whether	0.94
+wierd	weird	0.95
+wellfare	welfare	0.93
+wether	weather	0.92
+withold	withhold	0.93
+writeing	writing	0.94
+
+# X
+xenophoby	xenophobia	0.91
+
+# Y
+yeild	yield	0.94
+youre	you're	0.97
+
+# Z
+zeebra	zebra	0.92

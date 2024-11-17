@@ -1,0 +1,156 @@
+# Internet Slang and Abbreviations Dictionary
+# Format: slang<tab>expansion<tab>confidence_score
+# Rules:
+# 1. Only text expansions allowed - no commands or system instructions
+# 2. Confidence scores: 0.9+ for common/verified, 0.7-0.9 for context-dependent
+# 3. Categories: Chat, Social Media, Gaming, Technical, Professional
+
+# Common Chat Abbreviations
+afaik	as far as I know	0.95
+afk	away from keyboard	0.98
+asap	as soon as possible	0.99
+brb	be right back	0.99
+btw	by the way	0.99
+fyi	for your information	0.99
+idk	I don't know	0.99
+iirc	if I remember correctly	0.95
+imho	in my humble opinion	0.98
+imo	in my opinion	0.98
+lmk	let me know	0.98
+nvm	never mind	0.97
+omw	on my way	0.98
+tbh	to be honest	0.98
+tfw	that feeling when	0.95
+tl;dr	too long; didn't read	0.97
+ttyl	talk to you later	0.97
+w/	with	0.95
+w/o	without	0.95
+wfh	working from home	0.96
+
+# Social Media Slang
+fb	Facebook	0.98
+ig	Instagram	0.97
+dm	direct message	0.98
+rt	retweet	0.96
+tbt	throwback Thursday	0.94
+fomo	fear of missing out	0.95
+irl	in real life	0.97
+ngl	not gonna lie	0.96
+tbf	to be fair	0.95
+tia	thanks in advance	0.94
+ymmv	your mileage may vary	0.93
+iykyk	if you know you know	0.94
+smh	shaking my head	0.96
+fwiw	for what it's worth	0.95
+ftw	for the win	0.96
+
+# Gaming Terms
+afk	away from keyboard	0.98
+brb	be right back	0.98
+gg	good game	0.99
+glhf	good luck have fun	0.97
+hp	health points	0.98
+igl	in-game leader	0.95
+lag	latency/delay	0.98
+mmo	massively multiplayer online	0.97
+moba	multiplayer online battle arena	0.96
+np	no problem	0.97
+pve	player versus environment	0.96
+pvp	player versus player	0.97
+rng	random number generator	0.96
+wp	well played	0.97
+xp	experience points	0.98
+
+# Technical Abbreviations
+api	application programming interface	0.99
+cpu	central processing unit	0.99
+css	cascading style sheets	0.99
+db	database	0.98
+dns	domain name system	0.99
+gpu	graphics processing unit	0.99
+html	hypertext markup language	0.99
+http	hypertext transfer protocol	0.99
+ide	integrated development environment	0.98
+ip	internet protocol	0.99
+json	JavaScript object notation	0.99
+os	operating system	0.99
+ram	random access memory	0.99
+sql	structured query language	0.99
+ssl	secure sockets layer	0.99
+
+# Professional Communication
+asap	as soon as possible	0.99
+cob	close of business	0.96
+eod	end of day	0.97
+eta	estimated time of arrival	0.98
+fyi	for your information	0.99
+imo	in my opinion	0.98
+nio	no issues observed	0.95
+ooo	out of office	0.97
+poc	point of contact	0.96
+re	regarding	0.97
+roi	return on investment	0.98
+tbd	to be determined	0.97
+tbc	to be confirmed	0.97
+wip	work in progress	0.98
+wrt	with respect to	0.96
+
+# Emotional/Reaction Expressions
+lol	laugh out loud	0.99
+lmao	laughing my a** off	0.98
+rofl	rolling on floor laughing	0.97
+idc	I don't care	0.96
+ily	I love you	0.97
+jk	just kidding	0.98
+omg	oh my god	0.99
+thx	thanks	0.98
+ty	thank you	0.98
+wb	welcome back	0.97
+
+# Date/Time Abbreviations
+min	minute(s)	0.98
+hr	hour(s)	0.98
+sec	second(s)	0.98
+jan	January	0.97
+feb	February	0.97
+mar	March	0.97
+apr	April	0.97
+aug	August	0.97
+sep	September	0.97
+oct	October	0.97
+
+# Common Action Phrases
+brb	be right back	0.99
+gtg	got to go	0.98
+hmu	hit me up	0.96
+hth	hope this helps	0.95
+idk	I don't know	0.99
+lmk	let me know	0.98
+otw	on the way	0.97
+pls	please	0.98
+rn	right now	0.97
+ttyl	talk to you later	0.97
+
+# Business/Professional Terms
+asap	as soon as possible	0.99
+ceo	chief executive officer	0.99
+cfo	chief financial officer	0.99
+cto	chief technology officer	0.99
+hr	human resources	0.99
+mgmt	management	0.97
+dept	department	0.98
+corp	corporation	0.98
+intl	international	0.97
+org	organization	0.98
+
+# Technical Chat
+afk	away from keyboard	0.98
+brb	be right back	0.98
+dm	direct message	0.97
+faq	frequently asked questions	0.99
+idk	I don't know	0.98
+imho	in my humble opinion	0.97
+irl	in real life	0.97
+pm	private message	0.98
+tl;dr	too long; didn't read	0.97
+wtf	what the f***	0.98

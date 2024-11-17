@@ -1,6 +1,8 @@
-# Core dependencies
+# GUI
 PyQt5>=5.15.9
 pyqtwebengine>=5.15.6
+
+# Text Processing
 pyenchant>=3.2.2
 nltk>=3.8.1
 thefuzz>=0.19.0
@@ -10,25 +12,30 @@ transformers>=4.30.2
 torch>=2.0.1
 tqdm>=4.65.0
 
-# Text processing and ML
+# Machine Learning
 scikit-learn>=1.3.0
 numpy>=1.24.3
 pandas>=2.0.3
 spacy>=3.5.3
 openai>=1.0.0
 tiktoken>=0.5.1
-allennlp>=2.10.1  # Added for GECToR
-datasets>=2.14.0  # Added for training data handling
+datasets>=2.14.0
 
-# Speech recognition and synthesis
+# Gender-Inclusive GEC
+neuralcoref==4.0.0
+spacy==2.1.0
+
+# Speech Recognition
 SpeechRecognition>=3.10.0
 pyttsx3>=2.90
 pyaudio>=0.2.13
 
-# Utilities
+# Configuration and Security
 python-dotenv>=1.0.0
 requests>=2.31.0
 cryptography>=41.0.3
+
+# Development Tools
 pytest>=7.4.0
 black>=23.7.0
 isort>=5.12.0
@@ -39,14 +46,14 @@ psutil>=5.9.5
 colorama>=0.4.6
 pathlib>=1.0.1
 
-# Security and configuration
+# Security
 keyring>=24.2.0
 appdirs>=1.4.4
 PyJWT>=2.8.0
 configparser>=6.0.0
 argon2-cffi>=23.1.0
 
-# Database and caching
+# Database
 SQLAlchemy>=2.0.17
 redis>=4.6.0
 aioredis>=2.0.1
@@ -57,7 +64,7 @@ sphinx>=7.0.1
 sphinx-rtd-theme>=1.2.2
 autodoc>=0.5.0
 
-# Development tools
+# Testing and CI
 pre-commit>=3.3.3
 coverage>=7.2.7
 pytest-cov>=4.1.0

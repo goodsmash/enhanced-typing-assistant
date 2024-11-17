@@ -1,0 +1,122 @@
+# Medical Terms Dictionary
+# Format: term<tab>correction<tab>confidence_score
+
+# Common Medical Terms
+diabetis	diabetes	0.98
+arthritus	arthritis	0.97
+hypertenshion	hypertension	0.97
+asthama	asthma	0.98
+pneumonia	pneumonia	0.98
+allergie	allergy	0.97
+anxeity	anxiety	0.97
+depresion	depression	0.97
+insomnia	insomnia	0.98
+migrane	migraine	0.97
+
+# Anatomy Terms
+abdomen	abdomen	0.98
+skelatal	skeletal	0.96
+muscular	muscular	0.98
+cardiovascular	cardiovascular	0.97
+respiratory	respiratory	0.97
+digestiv	digestive	0.96
+nervus	nervous	0.96
+lymphatic	lymphatic	0.97
+endocrine	endocrine	0.97
+reproductiv	reproductive	0.96
+
+# Medical Procedures
+surgary	surgery	0.97
+diagnosis	diagnosis	0.98
+treatement	treatment	0.97
+therapy	therapy	0.98
+vaccination	vaccination	0.98
+immunisation	immunization	0.97
+transplant	transplant	0.98
+dialisis	dialysis	0.97
+chemotherapy	chemotherapy	0.98
+radiotherapy	radiotherapy	0.97
+
+# Medical Specialties
+pediatrition	pediatrician	0.96
+cardiologist	cardiologist	0.98
+dermatology	dermatology	0.98
+neurology	neurology	0.98
+oncology	oncology	0.98
+orthopedics	orthopedics	0.97
+psychiatry	psychiatry	0.98
+radiology	radiology	0.98
+urology	urology	0.98
+gynecology	gynecology	0.97
+
+# Medical Conditions
+alzeimers	Alzheimer's	0.96
+parkinsons	Parkinson's	0.96
+schizophrenia	schizophrenia	0.97
+epilepsey	epilepsy	0.96
+fibromyalgia	fibromyalgia	0.97
+osteoporosis	osteoporosis	0.97
+rheumatoid	rheumatoid	0.97
+scleroderma	scleroderma	0.97
+lupus	lupus	0.98
+celiac	celiac	0.97
+
+# Medical Equipment
+stethescope	stethoscope	0.96
+thermometre	thermometer	0.96
+sphygmomanometer	sphygmomanometer	0.95
+defibrilator	defibrillator	0.96
+ventilater	ventilator	0.96
+microscope	microscope	0.98
+endoscope	endoscope	0.97
+catheter	catheter	0.97
+syringe	syringe	0.98
+scalpel	scalpel	0.98
+
+# Medications
+antibiotics	antibiotics	0.98
+analgesics	analgesics	0.97
+antihistamine	antihistamine	0.97
+antidepresant	antidepressant	0.96
+antiinflamatory	anti-inflammatory	0.96
+antipsychotic	antipsychotic	0.97
+anticoagulant	anticoagulant	0.97
+antihypertensive	antihypertensive	0.96
+bronchodilator	bronchodilator	0.96
+corticosteroid	corticosteroid	0.96
+
+# Laboratory Terms
+hematology	hematology	0.98
+pathology	pathology	0.98
+microbiology	microbiology	0.98
+cytology	cytology	0.98
+histology	histology	0.98
+serology	serology	0.97
+toxicology	toxicology	0.97
+immunology	immunology	0.98
+biochemistry	biochemistry	0.98
+genetics	genetics	0.98
+
+# Medical Symptoms
+nausea	nausea	0.98
+vomitting	vomiting	0.97
+diarrhea	diarrhea	0.97
+constipaton	constipation	0.96
+fatigue	fatigue	0.98
+dizziness	dizziness	0.97
+headache	headache	0.98
+insomnia	insomnia	0.98
+vertigo	vertigo	0.98
+tinnitus	tinnitus	0.97
+
+# Emergency Medicine
+hemorrhage	hemorrhage	0.97
+cardiac arrest	cardiac arrest	0.98
+stroke	stroke	0.98
+anaphylaxis	anaphylaxis	0.97
+trauma	trauma	0.98
+fracture	fracture	0.98
+concussion	concussion	0.97
+poisoning	poisoning	0.98
+burns	burns	0.98
+drowning	drowning	0.98
