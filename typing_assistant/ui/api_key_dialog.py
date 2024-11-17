@@ -3,7 +3,7 @@
 import logging
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QLineEdit,
-    QPushButton, QMessageBox
+    QPushButton, QMessageBox, QHBoxLayout
 )
 from PyQt5.QtCore import Qt
 

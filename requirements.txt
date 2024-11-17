@@ -1,3 +1,11 @@
+# Web Framework
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+pydantic>=2.5.1
+starlette>=0.27.0
+jinja2>=3.1.2
+
 # GUI
 PyQt5>=5.15.9
 pyqtwebengine>=5.15.6
@@ -22,8 +30,7 @@ tiktoken>=0.5.1
 datasets>=2.14.0
 
 # Gender-Inclusive GEC
-neuralcoref==4.0.0
-spacy==2.1.0
+spacy>=3.5.3
 
 # Speech Recognition
 SpeechRecognition>=3.10.0
@@ -34,6 +41,8 @@ pyaudio>=0.2.13
 python-dotenv>=1.0.0
 requests>=2.31.0
 cryptography>=41.0.3
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
 
 # Development Tools
 pytest>=7.4.0
@@ -49,9 +58,10 @@ pathlib>=1.0.1
 # Security
 keyring>=24.2.0
 appdirs>=1.4.4
-PyJWT>=2.8.0
-configparser>=6.0.0
-argon2-cffi>=23.1.0
+
+# CORS
+aiofiles>=23.2.1
+python-multipart>=0.0.6
 
 # Database
 SQLAlchemy>=2.0.17

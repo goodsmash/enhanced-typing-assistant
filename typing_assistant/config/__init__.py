@@ -2,8 +2,10 @@
 Configuration settings for the Enhanced Typing Assistant application.
 """
 import os
+import json
+import configparser
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from appdirs import user_config_dir, user_cache_dir
 
 # Application paths
@@ -90,6 +92,69 @@ FEATURES = {
     'keyboard_shortcuts': True
 }
 
+class ConfigManager:
+    """Manages application configuration settings."""
+    
+    def __init__(self):
+        """Initialize the configuration manager."""
+        self.config = configparser.ConfigParser()
+        self.load_config()
+        
+    def load_config(self) -> None:
+        """Load configuration from the config file."""
+        if CONFIG_FILE.exists():
+            self.config.read(CONFIG_FILE)
+        else:
+            self._create_default_config()
+            
+    def _create_default_config(self) -> None:
+        """Create default configuration file."""
+        self.config['General'] = {
+            'theme': 'light',
+            'font_size': str(DEFAULT_FONT_SIZE),
+            'window_width': str(DEFAULT_WINDOW_SIZE[0]),
+            'window_height': str(DEFAULT_WINDOW_SIZE[1])
+        }
+        
+        self.config['Features'] = {key: str(value) for key, value in FEATURES.items()}
+        
+        self.save_config()
+        
+    def save_config(self) -> None:
+        """Save current configuration to file."""
+        with open(CONFIG_FILE, 'w') as configfile:
+            self.config.write(configfile)
+            
+    def get_setting(self, section: str, key: str, default: Any = None) -> Any:
+        """Get a configuration setting."""
+        try:
+            return self.config.get(section, key)
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            return default
+            
+    def set_setting(self, section: str, key: str, value: Any) -> None:
+        """Set a configuration setting."""
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+        self.config.set(section, key, str(value))
+        self.save_config()
+        
+    def get_theme(self) -> Dict[str, str]:
+        """Get the current theme configuration."""
+        theme_name = self.get_setting('General', 'theme', 'light')
+        return THEMES.get(theme_name, THEMES['light'])
+        
+    def get_features(self) -> Dict[str, bool]:
+        """Get the current feature flags."""
+        features = {}
+        if self.config.has_section('Features'):
+            for key in FEATURES:
+                value = self.get_setting('Features', key, str(FEATURES[key]))
+                features[key] = value.lower() == 'true'
+        else:
+            features = FEATURES
+        return features
+
 __all__ = [
     'APP_NAME',
     'CONFIG_DIR',
@@ -106,21 +171,7 @@ __all__ = [
     'APP_WEBSITE',
     'SUPPORT_EMAIL',
     'GITHUB_REPO',
-    'ENCRYPTION_KEY_LENGTH',
-    'PASSWORD_MIN_LENGTH',
-    'MAX_LOGIN_ATTEMPTS',
-    'SESSION_TIMEOUT_MINUTES',
-    'API_KEY_ROTATION_DAYS',
-    'CACHE_SIZE',
-    'CACHE_EXPIRY_MINUTES',
-    'MAX_TEXT_LENGTH',
-    'CORRECTION_DELAY_MS',
-    'BATCH_SIZE',
-    'DEFAULT_WINDOW_SIZE',
-    'MIN_WINDOW_SIZE',
-    'DEFAULT_FONT_SIZE',
-    'MIN_FONT_SIZE',
-    'MAX_FONT_SIZE',
     'THEMES',
-    'FEATURES'
+    'FEATURES',
+    'ConfigManager'
 ]

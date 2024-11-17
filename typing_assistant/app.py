@@ -194,7 +194,7 @@ class TypingAssistantApp(QMainWindow):
 
     def handle_connection_error(self):
         """Handle API connection errors."""
-        QMessageBox.warning(
+        result = QMessageBox.warning(
             self,
             "Connection Error",
             "Failed to connect to the API. Would you like to enable offline mode?",
@@ -223,7 +223,7 @@ class TypingAssistantApp(QMainWindow):
 
     def handle_processing_error(self):
         """Handle text processing errors."""
-        QMessageBox.warning(
+        result = QMessageBox.warning(
             self,
             "Processing Error",
             "Failed to process text. Would you like to switch to offline mode?",

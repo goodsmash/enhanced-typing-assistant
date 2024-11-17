@@ -151,11 +151,11 @@ def main() -> int:
         
         # Import and run the application
         try:
-            from typing_assistant.app import TypingAssistant
+            from typing_assistant.app import TypingAssistantApp
             from PyQt5.QtWidgets import QApplication
             
             app = QApplication(sys.argv)
-            window = TypingAssistant()
+            window = TypingAssistantApp()
             window.show()
             return app.exec_()
             
