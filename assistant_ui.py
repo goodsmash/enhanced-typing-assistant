@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QTextEdit, QPushButton, 
     QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QGroupBox, 
     QMessageBox, QStatusBar, QMenuBar, QAction, QMenu, 
-    QGridLayout, QSpinBox, QCheckBox, QProgressBar
+    QGridLayout, QSpinBox, QCheckBox, QProgressBar, QTabWidget
 )
 from PyQt5.QtCore import Qt, QSettings, QTimer, pyqtSignal, QThread
 from PyQt5.QtGui import QFont, QPalette, QColor
@@ -34,6 +34,9 @@ except ImportError:
 
 from api_providers import ProviderFactory
 from text_correction import TextCorrector
+from typing_assistant.gamification.achievements import AchievementTracker
+from typing_assistant.gamification.visualization import LearningCurveWidget
+from typing_assistant.gamification.word_counter import WordCounter
 
 
 class CorrectionThread(QThread):
@@ -171,6 +174,13 @@ class EnhancedTypingAssistant(QMainWindow):
         if sr:
             self.recognizer = sr.Recognizer()
         
+        # Achievement tracking
+        self.achievement_tracker = AchievementTracker()
+        self.learning_curve = LearningCurveWidget()
+        
+        # Load saved achievements
+        self.achievement_tracker.load_achievements('achievements.json')
+        
         # Setup UI
         self.setup_ui()
         self.setup_connections()
@@ -189,6 +199,18 @@ class EnhancedTypingAssistant(QMainWindow):
         self.create_text_area()
         self.create_control_panel()
         self.create_status_bar()
+        
+        # Add learning curve widget to a new tab
+        self.stats_tab = QWidget()
+        stats_layout = QVBoxLayout(self.stats_tab)
+        stats_layout.addWidget(self.learning_curve)
+        
+        # Add tab widget if it doesn't exist
+        if not hasattr(self, 'tab_widget'):
+            self.tab_widget = QTabWidget()
+            self.layout.addWidget(self.tab_widget)
+        
+        self.tab_widget.addTab(self.stats_tab, "Learning Progress")
         
         # Apply initial styles
         self.apply_styles()
@@ -413,7 +435,6 @@ class EnhancedTypingAssistant(QMainWindow):
 
     def setup_database(self):
         """Initialize the correction history database and load previous stats"""
-        from typing_assistant.gamification.word_counter import WordCounter
         self.word_counter = WordCounter()
         
         # Load previous stats if available
@@ -435,7 +456,6 @@ class EnhancedTypingAssistant(QMainWindow):
     def calculate_wpm(self):
         """Calculate and update words per minute"""
         if not hasattr(self, 'word_counter'):
-            from typing_assistant.gamification.word_counter import WordCounter
             self.word_counter = WordCounter()
             
         text = self.input_text.toPlainText()
@@ -477,6 +497,23 @@ class EnhancedTypingAssistant(QMainWindow):
         else:
             self.progress_bar.setVisible(False)
             
+        # Update achievements
+        newly_unlocked = self.achievement_tracker.update_achievements(stats)
+        
+        # Show achievement notifications
+        for achievement in newly_unlocked:
+            QMessageBox.information(
+                self,
+                "Achievement Unlocked! 🏆",
+                f"Congratulations! You've earned: {achievement.name}\n{achievement.description}"
+            )
+        
+        # Save achievements
+        self.achievement_tracker.save_achievements('achievements.json')
+        
+        # Update learning curve visualization
+        self.learning_curve.plot_learning_curve(self.get_performance_history(), 'wpm')
+        
     def save_correction_history(self, original: str, corrected: str):
         """Save correction history for learning analytics"""
         if hasattr(self, 'word_counter'):
@@ -566,7 +603,11 @@ class EnhancedTypingAssistant(QMainWindow):
             return
             
         stats = self.word_counter.get_stats()
-        message = (
+        achievements = self.achievement_tracker.get_all_achievements()
+        unlocked = self.achievement_tracker.get_unlocked_achievements()
+        next_achievements = self.achievement_tracker.get_next_achievements()
+        
+        stats_text = (
             f"Typing Performance Statistics\n\n"
             f"Current Session:\n"
             f"- Words Typed: {stats['words']}\n"
@@ -575,10 +616,17 @@ class EnhancedTypingAssistant(QMainWindow):
             f"- Current Streak: {stats['streak']}\n"
             f"- Longest Streak: {stats['longest_streak']}\n"
             f"- Total Corrections: {stats['corrections']}\n\n"
-            f"Session Duration: {timedelta(seconds=int(stats['time']))}"
+            f"Session Duration: {timedelta(seconds=int(stats['time']))}\n\n"
+            f"Achievements 🏆\n"
+            f"Unlocked: {len(unlocked)}/{len(achievements)}\n\n"
         )
         
-        QMessageBox.information(self, "Performance Statistics", message)
+        if next_achievements:
+            stats_text += "Next Achievements:\n"
+            for achievement in next_achievements[:3]:
+                stats_text += f"• {achievement.name}: {achievement.progress:.1f}% complete\n"
+        
+        QMessageBox.information(self, "Performance Statistics", stats_text)
 
 
 if __name__ == '__main__':
