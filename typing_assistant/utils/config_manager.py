@@ -4,9 +4,13 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
+from datetime import datetime, timedelta
+import jwt
+import logging
 
 from cryptography.fernet import Fernet
 
+logger = logging.getLogger(__name__)
 
 class ConfigManager:
     """Manages application configuration and secrets."""
@@ -16,7 +20,10 @@ class ConfigManager:
         self.config_dir = Path.home() / ".typing_assistant"
         self.config_file = self.config_dir / "config.json"
         self.key_file = self.config_dir / "key.bin"
+        self.auth_file = self.config_dir / ".auth"
         self.config: Dict[str, Any] = {}
+        self.auth_token = None
+        self.token_expiry = None
         
         # Ensure config directory exists
         self.config_dir.mkdir(exist_ok=True)
@@ -26,6 +33,9 @@ class ConfigManager:
         
         # Load existing config or create default
         self.load()
+        
+        # Load authentication state
+        self.load_auth_state()
 
     def _load_or_create_key(self) -> None:
         """Load existing encryption key or create a new one."""
@@ -174,6 +184,106 @@ class ConfigManager:
         self.save()
 
     def is_authenticated(self) -> bool:
-        """Check if user is authenticated."""
-        api_key = self.get_api_key()
-        return bool(api_key and len(api_key) > 0)
+        """Check if user is authenticated and token is valid."""
+        try:
+            if not self.auth_token or not self.token_expiry:
+                return False
+                
+            if datetime.utcnow() > self.token_expiry:
+                self.auth_token = None
+                self.token_expiry = None
+                self.save_auth_state()
+                return False
+                
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error checking authentication: {e}")
+            return False
+
+    def authenticate(self, username: str, password: str) -> bool:
+        """Authenticate user and get access token."""
+        try:
+            if not username or not password:
+                return False
+                
+            # Verify password against stored hash
+            if not self.verify_password(username, password):
+                return False
+                
+            # Generate new token
+            payload = {
+                'sub': username,
+                'exp': datetime.utcnow() + timedelta(days=1)
+            }
+            
+            self.auth_token = jwt.encode(payload, self.key, algorithm='HS256')
+            self.token_expiry = datetime.utcnow() + timedelta(days=1)
+            
+            self.save_auth_state()
+            return True
+            
+        except Exception as e:
+            logger.error(f"Authentication error: {e}")
+            return False
+
+    def save_auth_state(self) -> None:
+        """Save authentication state securely."""
+        try:
+            if not self.auth_token:
+                if self.auth_file.exists():
+                    self.auth_file.unlink()
+                return
+                
+            state = {
+                'token': self.auth_token,
+                'expiry': self.token_expiry.isoformat()
+            }
+            
+            encrypted = self.cipher.encrypt(json.dumps(state).encode())
+            with open(self.auth_file, 'wb') as f:
+                f.write(encrypted)
+                
+        except Exception as e:
+            logger.error(f"Error saving auth state: {e}")
+
+    def load_auth_state(self) -> None:
+        """Load authentication state."""
+        try:
+            if not self.auth_file.exists():
+                return
+                
+            with open(self.auth_file, 'rb') as f:
+                encrypted = f.read()
+                
+            decrypted = self.cipher.decrypt(encrypted)
+            state = json.loads(decrypted)
+            
+            self.auth_token = state['token']
+            self.token_expiry = datetime.fromisoformat(state['expiry'])
+            
+        except Exception as e:
+            logger.error(f"Error loading auth state: {e}")
+            self.auth_token = None
+            self.token_expiry = None
+
+    def verify_password(self, username: str, password: str) -> bool:
+        """Verify password against stored hash."""
+        try:
+            user_file = self.config_dir / f"users/{username}.json"
+            if not user_file.exists():
+                return False
+                
+            with open(user_file, 'rb') as f:
+                encrypted = f.read()
+                
+            decrypted = self.cipher.decrypt(encrypted)
+            user_data = json.loads(decrypted)
+            
+            # NOTE: This is a placeholder for the actual password verification logic
+            # You should replace this with your actual password verification logic
+            return password == user_data['password_hash']
+            
+        except Exception as e:
+            logger.error(f"Error verifying password: {e}")
+            return False

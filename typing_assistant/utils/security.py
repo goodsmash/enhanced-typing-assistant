@@ -23,6 +23,9 @@ from ..config import (
     SESSION_TIMEOUT_MINUTES
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 class SecurityManager:
     """Manages security-related functionality."""
     
@@ -31,12 +34,14 @@ class SecurityManager:
         self._session_start = None
         self._login_attempts = 0
         self._load_env()
-
-    def _load_env(self) -> None:
+        
+    def _load_env(self):
         """Load environment variables."""
-        if API_KEYS_FILE.exists():
+        try:
             load_dotenv(API_KEYS_FILE)
-
+        except Exception as e:
+            logger.error(f"Error loading environment variables: {e}")
+            
     def initialize_encryption(self, password: str) -> bool:
         """Initialize encryption with a password."""
         try:
@@ -56,78 +61,9 @@ class SecurityManager:
             self._login_attempts = 0
             return True
         except Exception as e:
-            print(f"Encryption initialization failed: {e}")
+            logger.error(f"Encryption initialization failed: {e}")
             return False
-
-    def is_session_valid(self) -> bool:
-        """Check if the current session is valid."""
-        if not self._session_start:
-            return False
-        return (datetime.now() - self._session_start) < timedelta(minutes=SESSION_TIMEOUT_MINUTES)
-
-    def refresh_session(self) -> None:
-        """Refresh the session timeout."""
-        if self._session_start:
-            self._session_start = datetime.now()
-
-    def encrypt_api_key(self, api_key: str) -> Optional[str]:
-        """Encrypt an API key."""
-        if not self._fernet or not self.is_session_valid():
-            return None
-        try:
-            return self._fernet.encrypt(api_key.encode()).decode()
-        except Exception as e:
-            print(f"API key encryption failed: {e}")
-            return None
-
-    def decrypt_api_key(self, encrypted_key: str) -> Optional[str]:
-        """Decrypt an API key."""
-        if not self._fernet or not self.is_session_valid():
-            return None
-        try:
-            return self._fernet.decrypt(encrypted_key.encode()).decode()
-        except Exception as e:
-            print(f"API key decryption failed: {e}")
-            return None
-
-    def save_api_key(self, api_key: str) -> bool:
-        """Securely save an API key."""
-        try:
-            encrypted_key = self.encrypt_api_key(api_key)
-            if not encrypted_key:
-                return False
-
-            env_content = f"OPENAI_API_KEY='{encrypted_key}'\n"
             
-            # Create directory if it doesn't exist
-            API_KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Write to file
-            with open(API_KEYS_FILE, 'w') as f:
-                f.write(env_content)
-            
-            return True
-        except Exception as e:
-            print(f"Failed to save API key: {e}")
-            return False
-
-    def load_api_key(self) -> Optional[str]:
-        """Load and decrypt the API key."""
-        try:
-            if not API_KEYS_FILE.exists():
-                return None
-
-            load_dotenv(API_KEYS_FILE)
-            encrypted_key = os.getenv('OPENAI_API_KEY')
-            
-            if not encrypted_key:
-                return None
-
-            return self.decrypt_api_key(encrypted_key)
-        except Exception as e:
-            print(f"Failed to load API key: {e}")
-            return None
-
     def verify_password(self, password: str) -> bool:
         """Verify the user's password."""
         if self._login_attempts >= MAX_LOGIN_ATTEMPTS:
@@ -137,42 +73,121 @@ class SecurityManager:
         if not success:
             self._login_attempts += 1
         return success
-
-    def logout(self) -> None:
-        """Clear the current session."""
-        self._fernet = None
-        self._session_start = None
-
-    @staticmethod
-    def generate_secure_token() -> str:
-        """Generate a secure random token."""
-        return base64.urlsafe_b64encode(os.urandom(32)).decode()
-
-    @staticmethod
-    def hash_password(password: str) -> str:
+        
+    def hash_password(self, password: str) -> str:
         """Create a secure hash of a password."""
-        salt = os.urandom(32)
-        key = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode(),
-            salt,
-            100000
-        )
-        return base64.b64encode(salt + key).decode()
-
-    @staticmethod
-    def verify_password_hash(password: str, hash_str: str) -> bool:
-        """Verify a password against its hash."""
         try:
+            if len(password) < PASSWORD_MIN_LENGTH:
+                raise ValueError(f"Password must be at least {PASSWORD_MIN_LENGTH} characters")
+                
+            salt = os.urandom(32)
+            key = hashlib.pbkdf2_hmac(
+                'sha256',
+                password.encode(),
+                salt,
+                100000  # Number of iterations
+            )
+            
+            # Combine salt and key
+            return base64.b64encode(salt + key).decode()
+            
+        except Exception as e:
+            logger.error(f"Error hashing password: {e}")
+            raise
+            
+    def check_password(self, password: str, hash_str: str) -> bool:
+        """Check if a password matches its hash."""
+        try:
+            # Decode the stored hash
             hash_bytes = base64.b64decode(hash_str)
-            salt = hash_bytes[:32]
-            key = hash_bytes[32:]
+            salt = hash_bytes[:32]  # First 32 bytes are salt
+            stored_key = hash_bytes[32:]  # Rest is the key
+            
+            # Hash the provided password with the same salt
             new_key = hashlib.pbkdf2_hmac(
                 'sha256',
                 password.encode(),
                 salt,
-                100000
+                100000  # Same number of iterations as in hash_password
             )
-            return key == new_key
-        except Exception:
+            
+            # Compare in constant time
+            return stored_key == new_key
+            
+        except Exception as e:
+            logger.error(f"Error checking password: {e}")
             return False
+            
+    def encrypt_data(self, data: str) -> bytes:
+        """Encrypt data."""
+        if not self._fernet:
+            raise ValueError("Encryption not initialized")
+            
+        try:
+            return self._fernet.encrypt(data.encode())
+        except Exception as e:
+            logger.error(f"Error encrypting data: {e}")
+            raise
+            
+    def decrypt_data(self, encrypted: bytes) -> str:
+        """Decrypt data."""
+        if not self._fernet:
+            raise ValueError("Encryption not initialized")
+            
+        try:
+            return self._fernet.decrypt(encrypted).decode()
+        except Exception as e:
+            logger.error(f"Error decrypting data: {e}")
+            raise
+            
+    def is_session_valid(self) -> bool:
+        """Check if the current session is valid."""
+        if not self._session_start:
+            return False
+            
+        session_age = datetime.now() - self._session_start
+        return session_age.total_seconds() < (SESSION_TIMEOUT_MINUTES * 60)
+        
+    def reset_session(self):
+        """Reset the current session."""
+        self._session_start = None
+        self._fernet = None
+        self._login_attempts = 0
+        
+    def store_api_key(self, api_key: str):
+        """Securely store an API key."""
+        try:
+            if not api_key:
+                return
+                
+            # Create a new encryption key for API storage
+            encryption_key = Fernet.generate_key()
+            cipher = Fernet(encryption_key)
+            
+            # Encrypt the API key
+            encrypted_key = cipher.encrypt(api_key.encode())
+            
+            # Save both the encryption key and encrypted API key
+            with open(API_KEYS_FILE, 'wb') as f:
+                f.write(encryption_key + b'\n' + encrypted_key)
+                
+        except Exception as e:
+            logger.error(f"Error storing API key: {e}")
+            raise
+            
+    def get_api_key(self) -> Optional[str]:
+        """Retrieve the stored API key."""
+        try:
+            if not os.path.exists(API_KEYS_FILE):
+                return None
+                
+            with open(API_KEYS_FILE, 'rb') as f:
+                encryption_key = f.readline().strip()
+                encrypted_key = f.readline().strip()
+                
+            cipher = Fernet(encryption_key)
+            return cipher.decrypt(encrypted_key).decode()
+            
+        except Exception as e:
+            logger.error(f"Error retrieving API key: {e}")
+            return None
