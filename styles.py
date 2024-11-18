@@ -207,24 +207,71 @@ class ColorSchemes:
         'disabled': '#666666'
     }
 
-def apply_theme(widget, theme='default'):
-    """Apply a color theme to the widget and all its children"""
-    if theme.lower() == 'dark':
-        colors = ColorSchemes.DARK
-    elif theme.lower() == 'high_contrast':
-        colors = ColorSchemes.HIGH_CONTRAST
-    else:
-        colors = ColorSchemes.DEFAULT
-        
+def apply_theme(window, theme='default'):
+    """Apply theme to the application window"""
     palette = QPalette()
-    palette.setColor(QPalette.Window, QColor(colors['window']))
-    palette.setColor(QPalette.WindowText, QColor(colors['text']))
-    palette.setColor(QPalette.Base, QColor(colors['window']))
-    palette.setColor(QPalette.AlternateBase, QColor(colors['hover']))
-    palette.setColor(QPalette.Text, QColor(colors['text']))
-    palette.setColor(QPalette.Button, QColor(colors['primary']))
-    palette.setColor(QPalette.ButtonText, QColor('#ffffff'))
-    palette.setColor(QPalette.Highlight, QColor(colors['secondary']))
-    palette.setColor(QPalette.HighlightedText, QColor('#ffffff'))
     
-    widget.setPalette(palette)
+    if theme.lower() == 'dark':
+        # Dark theme colors
+        bg_color = QColor("#2b2b2b")
+        text_color = QColor("#ffffff")
+        menu_color = QColor("#3b3b3b")
+        highlight_color = QColor("#323232")
+    elif theme.lower() == 'high_contrast':
+        # High contrast theme
+        bg_color = QColor("#000000")
+        text_color = QColor("#ffffff")
+        menu_color = QColor("#000000")
+        highlight_color = QColor("#0066cc")
+    else:
+        # Default light theme
+        bg_color = QColor("#f0f0f0")
+        text_color = QColor("#000000")
+        menu_color = QColor("#ffffff")
+        highlight_color = QColor("#e0e0e0")
+
+    # Set colors for various UI elements
+    palette.setColor(QPalette.Window, bg_color)
+    palette.setColor(QPalette.WindowText, text_color)
+    palette.setColor(QPalette.Base, bg_color)
+    palette.setColor(QPalette.AlternateBase, highlight_color)
+    palette.setColor(QPalette.Text, text_color)
+    palette.setColor(QPalette.Button, menu_color)
+    palette.setColor(QPalette.ButtonText, text_color)
+    palette.setColor(QPalette.Highlight, highlight_color)
+    palette.setColor(QPalette.HighlightedText, text_color)
+
+    # Apply palette to window
+    window.setPalette(palette)
+
+    # Style sheet for menus and other widgets
+    window.setStyleSheet(f"""
+        QMenuBar {{
+            background-color: {menu_color.name()};
+            color: {text_color.name()};
+            border-bottom: 1px solid {highlight_color.name()};
+        }}
+        QMenuBar::item:selected {{
+            background-color: {highlight_color.name()};
+        }}
+        QMenu {{
+            background-color: {menu_color.name()};
+            color: {text_color.name()};
+            border: 1px solid {highlight_color.name()};
+        }}
+        QMenu::item:selected {{
+            background-color: {highlight_color.name()};
+        }}
+        QComboBox {{
+            background-color: {bg_color.name()};
+            color: {text_color.name()};
+            border: 1px solid {highlight_color.name()};
+            padding: 5px;
+        }}
+        QTextEdit {{
+            background-color: {bg_color.name()};
+            color: {text_color.name()};
+            border: 1px solid {highlight_color.name()};
+            padding: 5px;
+        }}
+    """)

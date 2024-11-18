@@ -10,7 +10,8 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QTextEdit, QPushButton, 
     QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QGroupBox, 
     QMessageBox, QStatusBar, QMenuBar, QAction, QMenu, 
-    QGridLayout, QSpinBox, QCheckBox, QProgressBar, QTabWidget
+    QGridLayout, QSpinBox, QCheckBox, QProgressBar, QTabWidget,
+    QDialog, QDialogButtonBox, QLineEdit, QDoubleSpinBox
 )
 from PyQt5.QtCore import Qt, QSettings, QTimer, pyqtSignal, QThread
 from PyQt5.QtGui import QFont, QPalette, QColor
@@ -176,15 +177,15 @@ class EnhancedTypingAssistant(QMainWindow):
         
         # Achievement tracking
         self.achievement_tracker = AchievementTracker()
-        self.learning_curve = LearningCurveWidget()
+        self.learning_curve = None  # Initialize later to prevent UI lag
         
         # Load saved achievements
-        self.achievement_tracker.load_achievements('achievements.json')
-        
-        # Setup UI
-        self.setup_ui()
-        self.setup_connections()
-        self.load_settings()
+        achievements_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'data',
+            'achievements.json'
+        )
+        self.achievement_tracker.load_achievements(achievements_path)
         
         # Initialize correction history database
         self.setup_database()
@@ -200,17 +201,8 @@ class EnhancedTypingAssistant(QMainWindow):
         self.create_control_panel()
         self.create_status_bar()
         
-        # Add learning curve widget to a new tab
-        self.stats_tab = QWidget()
-        stats_layout = QVBoxLayout(self.stats_tab)
-        stats_layout.addWidget(self.learning_curve)
-        
-        # Add tab widget if it doesn't exist
-        if not hasattr(self, 'tab_widget'):
-            self.tab_widget = QTabWidget()
-            self.layout.addWidget(self.tab_widget)
-        
-        self.tab_widget.addTab(self.stats_tab, "Learning Progress")
+        # Initialize learning curve widget in a separate thread
+        QTimer.singleShot(0, self.init_learning_curve)
         
         # Apply initial styles
         self.apply_styles()
@@ -397,19 +389,61 @@ class EnhancedTypingAssistant(QMainWindow):
     def load_settings(self):
         """Load application settings"""
         # Load correction modes
-        self.correction_mode_combo.addItems([
-            'standard', 'cognitive_assistance', 'motor_difficulty',
-            'dyslexia-friendly', 'learning_support'
-        ])
-        self.correction_mode_combo.setCurrentText(self.correction_mode)
+        modes = [
+            ('standard', 'Standard Correction'),
+            ('cognitive_assistance', 'Cognitive Assistance'),
+            ('motor_difficulty', 'Motor Difficulty Support'),
+            ('dyslexia-friendly', 'Dyslexia-Friendly'),
+            ('learning_support', 'Learning Support')
+        ]
+        self.correction_mode_combo.clear()
+        for mode, display in modes:
+            self.correction_mode_combo.addItem(display, mode)
+        
+        # Set current mode
+        index = self.correction_mode_combo.findData(self.correction_mode)
+        if index >= 0:
+            self.correction_mode_combo.setCurrentIndex(index)
         
         # Load severity levels
-        self.severity_combo.addItems(['low', 'medium', 'high', 'maximum'])
-        self.severity_combo.setCurrentText(self.correction_severity)
+        severities = [
+            ('low', 'Minimal Corrections'),
+            ('medium', 'Balanced Corrections'),
+            ('high', 'Comprehensive Corrections'),
+            ('maximum', 'Maximum Support')
+        ]
+        self.severity_combo.clear()
+        for severity, display in severities:
+            self.severity_combo.addItem(display, severity)
         
-        # Load languages
-        self.language_combo.addItems(['English', 'Spanish', 'French', 'German'])
-        self.language_combo.setCurrentText(self.selected_language)
+        # Set current severity
+        index = self.severity_combo.findData(self.correction_severity)
+        if index >= 0:
+            self.severity_combo.setCurrentIndex(index)
+        
+        # Load languages with proper names
+        languages = [
+            ('en', 'English'),
+            ('es', 'Español'),
+            ('fr', 'Français'),
+            ('de', 'Deutsch'),
+            ('it', 'Italiano'),
+            ('pt', 'Português'),
+            ('nl', 'Nederlands'),
+            ('pl', 'Polski'),
+            ('ru', 'Русский'),
+            ('zh', '中文'),
+            ('ja', '日本語'),
+            ('ko', '한국어')
+        ]
+        self.language_combo.clear()
+        for code, name in languages:
+            self.language_combo.addItem(name, code)
+        
+        # Set current language
+        index = self.language_combo.findData(self.selected_language)
+        if index >= 0:
+            self.language_combo.setCurrentIndex(index)
 
     def save_settings(self):
         """Save current settings"""
@@ -497,22 +531,11 @@ class EnhancedTypingAssistant(QMainWindow):
         else:
             self.progress_bar.setVisible(False)
             
-        # Update achievements
-        newly_unlocked = self.achievement_tracker.update_achievements(stats)
-        
-        # Show achievement notifications
-        for achievement in newly_unlocked:
-            QMessageBox.information(
-                self,
-                "Achievement Unlocked! 🏆",
-                f"Congratulations! You've earned: {achievement.name}\n{achievement.description}"
-            )
-        
-        # Save achievements
-        self.achievement_tracker.save_achievements('achievements.json')
+        # Update achievements without blocking UI
+        QTimer.singleShot(0, lambda: self.check_achievements(stats))
         
         # Update learning curve visualization
-        self.learning_curve.plot_learning_curve(self.get_performance_history(), 'wpm')
+        self.update_learning_curve()
         
     def save_correction_history(self, original: str, corrected: str):
         """Save correction history for learning analytics"""
@@ -560,8 +583,155 @@ class EnhancedTypingAssistant(QMainWindow):
 
     def show_api_settings(self):
         """Show API settings dialog"""
-        # TODO: Implement API settings dialog
-        pass
+        dialog = QDialog(self)
+        dialog.setWindowTitle("API Settings")
+        dialog.setModal(True)
+        layout = QVBoxLayout()
+        
+        # Provider selection
+        provider_group = QGroupBox("AI Provider")
+        provider_layout = QVBoxLayout()
+        provider_combo = QComboBox()
+        provider_combo.addItems(['OpenAI', 'Azure', 'Local'])
+        provider_combo.setCurrentText(self.selected_provider)
+        provider_layout.addWidget(provider_combo)
+        provider_group.setLayout(provider_layout)
+        
+        # Model settings
+        model_group = QGroupBox("Model Settings")
+        model_layout = QGridLayout()
+        
+        # Model selection
+        model_label = QLabel("Model:")
+        model_combo = QComboBox()
+        model_combo.addItems(['GPT-3.5 Turbo', 'GPT-4', 'Custom'])
+        model_combo.setCurrentText(self.settings.value('model', 'GPT-3.5 Turbo'))
+        
+        # Temperature setting
+        temp_label = QLabel("Temperature:")
+        temp_spin = QDoubleSpinBox()
+        temp_spin.setRange(0.0, 2.0)
+        temp_spin.setSingleStep(0.1)
+        temp_spin.setValue(float(self.settings.value('temperature', 0.7)))
+        
+        # Max tokens
+        tokens_label = QLabel("Max Tokens:")
+        tokens_spin = QSpinBox()
+        tokens_spin.setRange(50, 4000)
+        tokens_spin.setSingleStep(50)
+        tokens_spin.setValue(int(self.settings.value('max_tokens', 1000)))
+        
+        # Add to grid
+        model_layout.addWidget(model_label, 0, 0)
+        model_layout.addWidget(model_combo, 0, 1)
+        model_layout.addWidget(temp_label, 1, 0)
+        model_layout.addWidget(temp_spin, 1, 1)
+        model_layout.addWidget(tokens_label, 2, 0)
+        model_layout.addWidget(tokens_spin, 2, 1)
+        model_group.setLayout(model_layout)
+        
+        # API Key input
+        key_group = QGroupBox("API Authentication")
+        key_layout = QVBoxLayout()
+        key_input = QLineEdit()
+        key_input.setEchoMode(QLineEdit.Password)
+        if self.api_key:
+            key_input.setText(self.api_key)
+        key_layout.addWidget(QLabel("API Key:"))
+        key_layout.addWidget(key_input)
+        key_group.setLayout(key_layout)
+        
+        # Test connection button
+        test_button = QPushButton("Test Connection")
+        test_button.clicked.connect(lambda: self.test_api_connection(
+            provider_combo.currentText(),
+            key_input.text(),
+            model_combo.currentText()
+        ))
+        
+        # Add all components
+        layout.addWidget(provider_group)
+        layout.addWidget(model_group)
+        layout.addWidget(key_group)
+        layout.addWidget(test_button)
+        
+        # Buttons
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        button_box.accepted.connect(lambda: self.save_api_settings(
+            provider_combo.currentText(),
+            key_input.text(),
+            model_combo.currentText(),
+            temp_spin.value(),
+            tokens_spin.value(),
+            dialog
+        ))
+        button_box.rejected.connect(dialog.reject)
+        layout.addWidget(button_box)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def test_api_connection(self, provider: str, api_key: str, model: str):
+        """Test the API connection with provided settings"""
+        try:
+            provider_instance = ProviderFactory.create_provider(provider, api_key)
+            provider_instance.set_model(model)
+            
+            # Test with a simple prompt
+            result = provider_instance.correct_text(
+                "Test connection.",
+                "This is a test connection. Please respond with 'OK'."
+            )
+            
+            if result:
+                QMessageBox.information(
+                    self,
+                    "Connection Test",
+                    "Successfully connected to API!"
+                )
+            else:
+                raise Exception("No response from API")
+                
+        except Exception as e:
+            QMessageBox.warning(
+                self,
+                "Connection Test Failed",
+                f"Could not connect to API: {str(e)}"
+            )
+
+    def save_api_settings(self, provider: str, api_key: str, model: str,
+                         temperature: float, max_tokens: int, dialog: QDialog):
+        """Save API settings and close dialog"""
+        try:
+            # Save settings
+            self.settings.setValue('provider', provider)
+            self.settings.setValue('model', model)
+            self.settings.setValue('temperature', temperature)
+            self.settings.setValue('max_tokens', max_tokens)
+            
+            # Hash and save API key
+            if api_key:
+                key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+                self.settings.setValue('api_key_hash', key_hash)
+                self.api_key = api_key
+            
+            # Update provider
+            self.selected_provider = provider
+            if self.api_key:
+                self.ai_provider = ProviderFactory.create_provider(provider, self.api_key)
+                self.ai_provider.set_model(model)
+            
+            self.settings.sync()
+            dialog.accept()
+            
+        except Exception as e:
+            QMessageBox.warning(
+                self,
+                "Save Failed",
+                f"Failed to save settings: {str(e)}"
+            )
 
     def show_about(self):
         """Show about dialog"""
@@ -580,23 +750,43 @@ class EnhancedTypingAssistant(QMainWindow):
         self.dyslexia_font = self.dyslexia_font_action.isChecked()
         self.apply_styles()
 
-    def on_mode_changed(self, mode: str):
+    def on_mode_changed(self, mode_display: str):
         """Handle correction mode change"""
-        self.correction_mode = mode
+        index = self.correction_mode_combo.currentIndex()
+        mode = self.correction_mode_combo.itemData(index)
+        if mode:
+            self.correction_mode = mode
+            self.settings.setValue('correction_mode', mode)
 
-    def on_severity_changed(self, severity: str):
+    def on_severity_changed(self, severity_display: str):
         """Handle severity level change"""
-        self.correction_severity = severity
+        index = self.severity_combo.currentIndex()
+        severity = self.severity_combo.itemData(index)
+        if severity:
+            self.correction_severity = severity
+            self.settings.setValue('correction_severity', severity)
 
-    def on_language_changed(self, language: str):
+    def on_language_changed(self, language_display: str):
         """Handle language change"""
-        self.selected_language = language
-        if self.spell_checker:
-            try:
-                self.spell_checker = enchant.Dict(language)
-            except:
-                logging.error(f"Failed to load dictionary for language: {language}")
-
+        index = self.language_combo.currentIndex()
+        language = self.language_combo.itemData(index)
+        if language:
+            self.selected_language = language
+            self.settings.setValue('language', language)
+            
+            # Update spell checker
+            if self.spell_checker and enchant:
+                try:
+                    self.spell_checker = enchant.Dict(language)
+                except Exception as e:
+                    logging.error(f"Failed to load dictionary for language {language}: {e}")
+                    QMessageBox.warning(
+                        self,
+                        "Language Support",
+                        f"Spell checking is not available for {language_display}.\n"
+                        "Please install the appropriate dictionary."
+                    )
+    
     def show_performance_stats(self):
         """Show detailed performance statistics dialog"""
         if not hasattr(self, 'word_counter'):
@@ -617,7 +807,7 @@ class EnhancedTypingAssistant(QMainWindow):
             f"- Longest Streak: {stats['longest_streak']}\n"
             f"- Total Corrections: {stats['corrections']}\n\n"
             f"Session Duration: {timedelta(seconds=int(stats['time']))}\n\n"
-            f"Achievements 🏆\n"
+            f"Achievements \u2705\n"
             f"Unlocked: {len(unlocked)}/{len(achievements)}\n\n"
         )
         
@@ -627,6 +817,106 @@ class EnhancedTypingAssistant(QMainWindow):
                 stats_text += f"• {achievement.name}: {achievement.progress:.1f}% complete\n"
         
         QMessageBox.information(self, "Performance Statistics", stats_text)
+
+    def init_learning_curve(self):
+        """Initialize learning curve widget"""
+        try:
+            self.learning_curve = LearningCurveWidget()
+            
+            # Add learning curve widget to a new tab
+            self.stats_tab = QWidget()
+            stats_layout = QVBoxLayout(self.stats_tab)
+            stats_layout.addWidget(self.learning_curve)
+            
+            # Add tab widget if it doesn't exist
+            if not hasattr(self, 'tab_widget'):
+                self.tab_widget = QTabWidget()
+                self.layout.addWidget(self.tab_widget)
+            
+            self.tab_widget.addTab(self.stats_tab, "Learning Progress")
+            
+            # Update initial visualization
+            self.update_learning_curve()
+        except Exception as e:
+            logger.error(f"Error initializing learning curve: {e}")
+
+    def check_achievements(self, stats: Dict[str, float]):
+        """Check and update achievements"""
+        try:
+            # Update achievements
+            newly_unlocked = self.achievement_tracker.update_achievements(stats)
+            
+            # Show achievement notifications
+            if newly_unlocked:
+                self.show_achievement_notifications(newly_unlocked)
+            
+            # Save achievements
+            achievements_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'data',
+                'achievements.json'
+            )
+            self.achievement_tracker.save_achievements(achievements_path)
+            
+            # Update learning curve visualization
+            self.update_learning_curve()
+            
+        except Exception as e:
+            logger.error(f"Error checking achievements: {e}")
+
+    def show_achievement_notifications(self, achievements: List[Achievement]):
+        """Show achievement notifications without interrupting typing"""
+        try:
+            for achievement in achievements:
+                notification = QMessageBox(self)
+                notification.setIcon(QMessageBox.Information)
+                notification.setWindowTitle("Achievement Unlocked! \u2705")
+                notification.setText(
+                    f"Congratulations! You've earned:\n\n"
+                    f"{achievement.icon} {achievement.name}\n"
+                    f"{achievement.description}"
+                )
+                notification.setStandardButtons(QMessageBox.Ok)
+                
+                # Use non-modal dialog to avoid interrupting typing
+                notification.setWindowModality(Qt.NonModal)
+                notification.show()
+        except Exception as e:
+            logger.error(f"Error showing achievement notification: {e}")
+
+    def update_learning_curve(self):
+        """Update learning curve visualization"""
+        try:
+            if self.learning_curve is None:
+                return
+                
+            history = self.get_performance_history()
+            if history:
+                self.learning_curve.plot_learning_curve(history, 'wpm')
+        except Exception as e:
+            logger.error(f"Error updating learning curve: {e}")
+
+    def get_performance_history(self) -> List[Dict[str, float]]:
+        """Get performance history data"""
+        try:
+            if not hasattr(self, 'word_counter'):
+                return []
+                
+            history = self.word_counter.get_history()
+            if not history:
+                return []
+                
+            # Ensure all required fields are present
+            valid_history = []
+            for entry in history:
+                if all(key in entry for key in ['timestamp', 'wpm', 'accuracy', 'streak']):
+                    valid_history.append(entry)
+                
+            return valid_history
+            
+        except Exception as e:
+            logger.error(f"Error getting performance history: {e}")
+            return []
 
 
 if __name__ == '__main__':

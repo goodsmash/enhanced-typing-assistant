@@ -7,7 +7,7 @@ import logging
 import argparse
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QMessageBox
-from enhanced_typing_assistant import EnhancedTypingAssistant
+from assistant_ui import EnhancedTypingAssistant
 
 VERSION = '1.0.0'
 

@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import os
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,19 @@ class Achievement:
     unlocked: bool = False
     unlock_date: Optional[str] = None
     progress: float = 0.0
+
+    def validate(self) -> bool:
+        """Validate achievement data"""
+        try:
+            if not all([self.id, self.name, self.description, self.category]):
+                return False
+            if self.threshold <= 0:
+                return False
+            if not isinstance(self.progress, (int, float)) or not 0 <= self.progress <= 100:
+                self.progress = min(max(float(self.progress), 0), 100)
+            return True
+        except (ValueError, TypeError):
+            return False
 
 class AchievementTracker:
     """Tracks user achievements and milestones"""
@@ -172,28 +186,32 @@ class AchievementTracker:
         Returns:
             List of newly unlocked achievements
         """
+        if not isinstance(stats, dict):
+            logger.error("Invalid stats format")
+            return []
+            
         newly_unlocked = []
         
         try:
             # Check speed achievements
-            if 'wpm' in stats:
+            if 'wpm' in stats and isinstance(stats['wpm'], (int, float)):
                 newly_unlocked.extend(self._check_category('speed', stats['wpm']))
             
             # Check accuracy achievements
-            if 'accuracy' in stats:
+            if 'accuracy' in stats and isinstance(stats['accuracy'], (int, float)):
                 newly_unlocked.extend(self._check_category('accuracy', stats['accuracy']))
             
             # Check streak achievements
-            if 'streak' in stats:
+            if 'streak' in stats and isinstance(stats['streak'], (int, float)):
                 newly_unlocked.extend(self._check_category('streak', stats['streak']))
             
             # Check session achievements
-            if 'time' in stats:
+            if 'time' in stats and isinstance(stats['time'], (int, float)):
                 minutes = stats['time'] / 60
                 newly_unlocked.extend(self._check_category('session', minutes))
             
             # Check improvement achievements
-            if 'improvement' in stats:
+            if 'improvement' in stats and isinstance(stats['improvement'], (int, float)):
                 newly_unlocked.extend(self._check_category('improvement', stats['improvement']))
             
             return newly_unlocked
@@ -235,16 +253,28 @@ class AchievementTracker:
             filepath: Path to save achievements
         """
         try:
+            # Ensure path is absolute
+            filepath = os.path.abspath(filepath)
+            save_dir = os.path.dirname(filepath)
+            
+            # Create directory if it doesn't exist
+            os.makedirs(save_dir, exist_ok=True)
+            
+            # Validate achievements before saving
+            valid_achievements = {
+                id: achievement for id, achievement in self.achievements.items()
+                if achievement.validate()
+            }
+            
             data = {
                 id: {
                     'unlocked': achievement.unlocked,
                     'unlock_date': achievement.unlock_date,
                     'progress': achievement.progress
                 }
-                for id, achievement in self.achievements.items()
+                for id, achievement in valid_achievements.items()
             }
             
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
             with open(filepath, 'w') as f:
                 json.dump(data, f, indent=2)
                 
@@ -258,7 +288,11 @@ class AchievementTracker:
             filepath: Path to load achievements from
         """
         try:
+            # Ensure path is absolute
+            filepath = os.path.abspath(filepath)
+            
             if not os.path.exists(filepath):
+                logger.warning(f"Achievements file not found: {filepath}")
                 return
                 
             with open(filepath, 'r') as f:
@@ -266,10 +300,15 @@ class AchievementTracker:
                 
             for id, achievement_data in data.items():
                 if id in self.achievements:
-                    achievement = self.achievements[id]
-                    achievement.unlocked = achievement_data['unlocked']
-                    achievement.unlock_date = achievement_data['unlock_date']
-                    achievement.progress = achievement_data['progress']
+                    try:
+                        achievement = self.achievements[id]
+                        achievement.unlocked = bool(achievement_data.get('unlocked', False))
+                        achievement.unlock_date = str(achievement_data.get('unlock_date', ''))
+                        progress = float(achievement_data.get('progress', 0))
+                        achievement.progress = min(max(progress, 0), 100)
+                    except (ValueError, TypeError) as e:
+                        logger.error(f"Error loading achievement {id}: {e}")
+                        continue
                     
         except Exception as e:
             logger.error(f"Error loading achievements from {filepath}: {e}")

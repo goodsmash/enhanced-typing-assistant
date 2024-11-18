@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtCore import Qt
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,9 +16,14 @@ class PerformanceCanvas(FigureCanvasQTAgg):
     """Canvas for displaying performance metrics"""
     
     def __init__(self, width: int = 8, height: int = 6, dpi: int = 100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        super().__init__(fig)
-        self.axes = fig.add_subplot(111)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        super().__init__(self.fig)
+        self.axes = self.fig.add_subplot(111)
+        
+    def clear(self):
+        """Clear the figure and close it properly"""
+        self.fig.clear()
+        plt.close(self.fig)
         
 class LearningCurveWidget(QWidget):
     """Widget for displaying learning curves and performance trends"""
@@ -27,6 +33,11 @@ class LearningCurveWidget(QWidget):
         self.layout = QVBoxLayout(self)
         self.canvas = PerformanceCanvas()
         self.layout.addWidget(self.canvas)
+        
+    def closeEvent(self, event):
+        """Handle widget closure"""
+        self.canvas.clear()
+        super().closeEvent(event)
         
     def plot_learning_curve(self, 
                           data: List[Dict[str, float]], 
@@ -41,12 +52,26 @@ class LearningCurveWidget(QWidget):
         """
         try:
             if not data:
+                self._show_no_data_message()
                 return
                 
-            # Extract data
-            dates = [datetime.fromisoformat(d['timestamp']) for d in data]
-            values = [d[metric] for d in data]
+            # Extract data and ensure timezone consistency
+            dates = []
+            values = []
+            for d in data:
+                try:
+                    date = datetime.fromisoformat(d['timestamp']).replace(tzinfo=None)
+                    value = float(d[metric])
+                    dates.append(date)
+                    values.append(value)
+                except (ValueError, KeyError) as e:
+                    logger.warning(f"Invalid data point: {e}")
+                    continue
             
+            if not dates:
+                self._show_no_data_message()
+                return
+                
             # Calculate moving average
             if len(values) >= window_size:
                 ma = np.convolve(values, np.ones(window_size)/window_size, mode='valid')
@@ -75,13 +100,26 @@ class LearningCurveWidget(QWidget):
             self.canvas.axes.legend()
             self.canvas.axes.grid(True, alpha=0.3)
             
+            # Set reasonable y-axis limits
+            min_val = min(values)
+            max_val = max(values)
+            range_val = max_val - min_val
+            self.canvas.axes.set_ylim(
+                min_val - range_val * 0.1,
+                max_val + range_val * 0.1
+            )
+            
             # Rotate x-axis labels for better readability
             plt.setp(self.canvas.axes.get_xticklabels(), rotation=45)
+            
+            # Adjust layout to prevent label cutoff
+            self.canvas.fig.tight_layout()
             
             self.canvas.draw()
             
         except Exception as e:
             logger.error(f"Error plotting learning curve: {e}")
+            self._show_error_message()
     
     def plot_performance_heatmap(self, 
                                data: List[Dict[str, float]], 
@@ -94,12 +132,29 @@ class LearningCurveWidget(QWidget):
         """
         try:
             if not data:
+                self._show_no_data_message()
                 return
                 
             # Extract hour and day information
-            hours = [datetime.fromisoformat(d['timestamp']).hour for d in data]
-            days = [datetime.fromisoformat(d['timestamp']).strftime('%A') for d in data]
-            values = [d[metric] for d in data]
+            hours = []
+            days = []
+            values = []
+            for d in data:
+                try:
+                    date = datetime.fromisoformat(d['timestamp']).replace(tzinfo=None)
+                    hour = date.hour
+                    day = date.strftime('%A')
+                    value = float(d[metric])
+                    hours.append(hour)
+                    days.append(day)
+                    values.append(value)
+                except (ValueError, KeyError) as e:
+                    logger.warning(f"Invalid data point: {e}")
+                    continue
+            
+            if not hours:
+                self._show_no_data_message()
+                return
             
             # Create 24x7 matrix for heatmap
             day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -141,6 +196,7 @@ class LearningCurveWidget(QWidget):
             
         except Exception as e:
             logger.error(f"Error plotting performance heatmap: {e}")
+            self._show_error_message()
     
     def plot_achievement_progress(self, achievements: List[Dict]) -> None:
         """Plot achievement progress
@@ -150,6 +206,7 @@ class LearningCurveWidget(QWidget):
         """
         try:
             if not achievements:
+                self._show_no_data_message()
                 return
             
             # Extract data
@@ -187,6 +244,7 @@ class LearningCurveWidget(QWidget):
             
         except Exception as e:
             logger.error(f"Error plotting achievement progress: {e}")
+            self._show_error_message()
     
     def plot_improvement_radar(self, 
                              current_stats: Dict[str, float],
@@ -233,3 +291,18 @@ class LearningCurveWidget(QWidget):
             
         except Exception as e:
             logger.error(f"Error plotting improvement radar: {e}")
+            self._show_error_message()
+    
+    def _show_no_data_message(self):
+        """Display message when no data is available"""
+        self.canvas.axes.clear()
+        self.canvas.axes.text(0.5, 0.5, 'No data available yet.\nKeep practicing!',
+                            ha='center', va='center', fontsize=12)
+        self.canvas.draw()
+        
+    def _show_error_message(self):
+        """Display error message when plotting fails"""
+        self.canvas.axes.clear()
+        self.canvas.axes.text(0.5, 0.5, 'Error displaying data.\nPlease try again.',
+                            ha='center', va='center', fontsize=12, color='red')
+        self.canvas.draw()

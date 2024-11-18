@@ -1,0 +1,72 @@
+{
+    "application": {
+        "name": "Enhanced Typing Assistant",
+        "version": "2.0.0",
+        "debug_mode": false,
+        "log_level": "INFO"
+    },
+    "ui": {
+        "default_theme": "Light",
+        "font_size": 12,
+        "font_family": "Arial",
+        "window_size": {
+            "width": 1024,
+            "height": 768
+        },
+        "keyboard_shortcuts": {
+            "correct_text": "Ctrl+R",
+            "voice_input": "Ctrl+Shift+V",
+            "text_to_speech": "Ctrl+Shift+S",
+            "increase_font": "Ctrl++",
+            "decrease_font": "Ctrl+-",
+            "toggle_theme": "Ctrl+T"
+        }
+    },
+    "text_processing": {
+        "default_language": "en",
+        "spell_check_enabled": true,
+        "auto_correct_enabled": true,
+        "grammar_check_enabled": true,
+        "suggestion_delay_ms": 500,
+        "max_suggestions": 5,
+        "cache_size": 1000
+    },
+    "ai_providers": {
+        "default_provider": "OpenAI",
+        "openai": {
+            "model": "gpt-3.5-turbo",
+            "temperature": 0.7,
+            "max_tokens": 150
+        },
+        "anthropic": {
+            "model": "claude-2",
+            "temperature": 0.7,
+            "max_tokens": 150
+        }
+    },
+    "accessibility": {
+        "high_contrast_enabled": false,
+        "dyslexic_font_enabled": false,
+        "screen_reader_support": true,
+        "motion_reduction": false,
+        "auto_save_interval_sec": 300
+    },
+    "speech": {
+        "voice_input_timeout_sec": 10,
+        "default_voice": "en-US",
+        "speech_rate": 150,
+        "volume": 1.0
+    },
+    "security": {
+        "api_key_encryption": true,
+        "session_timeout_min": 30,
+        "max_failed_logins": 3,
+        "password_min_length": 8
+    },
+    "performance": {
+        "max_history_items": 100,
+        "max_undo_steps": 50,
+        "auto_save_enabled": true,
+        "cache_cleanup_interval_min": 60
+    }
+}
