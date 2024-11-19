@@ -7,15 +7,32 @@ import re
 from typing import Dict, List, Optional, Tuple
 import enchant
 from collections import defaultdict
+import logging
 
 # Load environment variables
 load_dotenv()
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 class TextCorrector:
     def __init__(self):
         self.client = OpenAI()
         self.assistant_id = "asst_tXilod6dvj2WtdMO3u6zpDLj"
         
+        # LRU Cache for correction results
+        self.correction_cache = {}
+        self.max_cache_size = 1000
+        self.cache_hits = 0
+        self.cache_misses = 0
+        
+        # Performance monitoring
+        self.total_corrections = 0
+        self.total_processing_time = 0
+        self.error_count = 0
+        self.last_performance_check = time.time()
+        
+        # Initialize keyboard layout and patterns
         self.keyboard_layout = {
             'q': ['w', 'a', '1'], 'w': ['q', 'e', 's', '2'], 'e': ['w', 'r', 'd', '3'],
             'r': ['e', 't', 'f', '4'], 't': ['r', 'y', 'g', '5'], 'y': ['t', 'u', 'h', '6'],
@@ -62,85 +79,157 @@ class TextCorrector:
         
     async def correct_text(self, text: str, mode: str = "comprehensive", severity: str = "medium", language: str = "English") -> str:
         """
-        Correct text using the OpenAI Assistant.
-        
-        Args:
-            text (str): The text to correct
-            mode (str): One of ["spelling", "grammar", "clarity", "comprehensive"]
-            severity (str): One of ["low", "medium", "high"]
-            language (str): The language of the text
-            
-        Returns:
-            str: The corrected text
+        Correct text using the OpenAI Assistant with improved caching and performance monitoring.
         """
         try:
-            # Input validation
+            start_time = time.time()
+            self.total_corrections += 1
+            
+            # Check cache first
+            cache_key = f"{text}:{mode}:{severity}:{language}"
+            if cache_key in self.correction_cache:
+                self.cache_hits += 1
+                return self.correction_cache[cache_key]
+            
+            self.cache_misses += 1
+            
+            # Input validation with detailed error messages
             if not text or not isinstance(text, str):
-                raise ValueError("Invalid input text")
+                raise ValueError("Invalid input text: Text must be a non-empty string")
                 
             if mode not in ["spelling", "grammar", "clarity", "comprehensive"]:
+                logger.warning(f"Invalid mode '{mode}', defaulting to comprehensive")
                 mode = "comprehensive"
                 
             if severity not in ["low", "medium", "high"]:
+                logger.warning(f"Invalid severity '{severity}', defaulting to medium")
                 severity = "medium"
             
-            # Create a thread
-            thread = await self.client.beta.threads.create()
+            # Create a thread with timeout handling
+            try:
+                thread = await asyncio.wait_for(
+                    self.client.beta.threads.create(),
+                    timeout=10.0
+                )
+            except asyncio.TimeoutError:
+                raise TimeoutError("Thread creation timed out")
             
-            # Add the message to the thread
-            message = await self.client.beta.threads.messages.create(
-                thread_id=thread.id,
-                role="user",
-                content=f"Please correct this {language} text. Mode: {mode}, Severity: {severity}\n\nText: {text}"
-            )
+            # Add message with improved error handling
+            try:
+                message = await asyncio.wait_for(
+                    self.client.beta.threads.messages.create(
+                        thread_id=thread.id,
+                        role="user",
+                        content=self._build_correction_prompt(text, mode, severity, language)
+                    ),
+                    timeout=10.0
+                )
+            except asyncio.TimeoutError:
+                raise TimeoutError("Message creation timed out")
             
-            # Run the assistant
-            run = await self.client.beta.threads.runs.create(
-                thread_id=thread.id,
-                assistant_id=self.assistant_id
-            )
-            
-            # Wait for completion with timeout
-            timeout = 30  # 30 seconds timeout
-            start_time = time.time()
-            while True:
-                run = await self.client.beta.threads.runs.retrieve(
-                    thread_id=thread.id,
-                    run_id=run.id
+            # Run assistant with monitoring
+            try:
+                run = await asyncio.wait_for(
+                    self.client.beta.threads.runs.create(
+                        thread_id=thread.id,
+                        assistant_id=self.assistant_id
+                    ),
+                    timeout=30.0
                 )
                 
-                if run.status == "completed":
-                    break
-                elif run.status in ["failed", "cancelled", "expired"]:
-                    raise Exception(f"Assistant run failed with status: {run.status}")
-                elif time.time() - start_time > timeout:
-                    await self.client.beta.threads.runs.cancel(
+                # Monitor run status with timeout
+                start_wait = time.time()
+                while True:
+                    if time.time() - start_wait > 60:  # 1 minute timeout
+                        raise TimeoutError("Assistant run timed out")
+                        
+                    run_status = await self.client.beta.threads.runs.retrieve(
                         thread_id=thread.id,
                         run_id=run.id
                     )
-                    raise TimeoutError("Assistant response timed out")
                     
-                await asyncio.sleep(1)  # Wait 1 second before checking again
-            
-            # Get the assistant's response
-            messages = await self.client.beta.threads.messages.list(
-                thread_id=thread.id
-            )
-            
-            if not messages.data:
-                raise Exception("No response from assistant")
+                    if run_status.status == 'completed':
+                        break
+                    elif run_status.status in ['failed', 'cancelled']:
+                        raise RuntimeError(f"Assistant run failed with status: {run_status.status}")
+                        
+                    await asyncio.sleep(1)
                 
-            # Return the corrected text from the assistant's last message
-            corrected_text = messages.data[0].content[0].text.value
-            
-            # Clean up the thread
-            await self.client.beta.threads.delete(thread.id)
-            
-            return corrected_text
-            
+                # Get messages with timeout
+                messages = await asyncio.wait_for(
+                    self.client.beta.threads.messages.list(thread_id=thread.id),
+                    timeout=10.0
+                )
+                
+                # Process result
+                corrected_text = messages.data[0].content[0].text.value
+                
+                # Update cache with LRU eviction
+                if len(self.correction_cache) >= self.max_cache_size:
+                    self.correction_cache.pop(next(iter(self.correction_cache)))
+                self.correction_cache[cache_key] = corrected_text
+                
+                # Update performance metrics
+                end_time = time.time()
+                self.total_processing_time += (end_time - start_time)
+                
+                # Log performance stats periodically
+                if end_time - self.last_performance_check > 3600:  # Every hour
+                    self._log_performance_metrics()
+                    self.last_performance_check = end_time
+                
+                return corrected_text
+                
+            except asyncio.TimeoutError:
+                raise TimeoutError("Assistant processing timed out")
+                
         except Exception as e:
-            print(f"Error in text correction: {str(e)}")
-            return text  # Return original text if correction fails
+            self.error_count += 1
+            logger.error(f"Text correction error: {str(e)}")
+            raise
+            
+    def _build_correction_prompt(self, text: str, mode: str, severity: str, language: str) -> str:
+        """Build a detailed correction prompt based on mode and severity."""
+        return (
+            f"Please correct this {language} text with the following parameters:\n"
+            f"Mode: {mode} - Focus on {self._get_mode_description(mode)}\n"
+            f"Severity: {severity} - {self._get_severity_description(severity)}\n\n"
+            f"Text to correct: {text}"
+        )
+        
+    def _get_mode_description(self, mode: str) -> str:
+        """Get detailed description for correction mode."""
+        descriptions = {
+            "spelling": "basic spelling corrections while preserving original structure",
+            "grammar": "grammatical improvements and sentence structure",
+            "clarity": "clarity and readability improvements",
+            "comprehensive": "complete text improvement including spelling, grammar, and clarity"
+        }
+        return descriptions.get(mode, descriptions["comprehensive"])
+        
+    def _get_severity_description(self, severity: str) -> str:
+        """Get detailed description for correction severity."""
+        descriptions = {
+            "low": "make minimal necessary corrections",
+            "medium": "balance between correction and preserving original style",
+            "high": "thorough correction with significant improvements"
+        }
+        return descriptions.get(severity, descriptions["medium"])
+        
+    def _log_performance_metrics(self):
+        """Log performance metrics for monitoring."""
+        if self.total_corrections > 0:
+            avg_time = self.total_processing_time / self.total_corrections
+            cache_hit_rate = (self.cache_hits / self.total_corrections) * 100
+            error_rate = (self.error_count / self.total_corrections) * 100
+            
+            logger.info(
+                f"Performance Metrics:\n"
+                f"Total Corrections: {self.total_corrections}\n"
+                f"Average Processing Time: {avg_time:.2f}s\n"
+                f"Cache Hit Rate: {cache_hit_rate:.1f}%\n"
+                f"Error Rate: {error_rate:.1f}%"
+            )
             
     async def cleanup(self):
         """Clean up any resources"""
