@@ -1,10 +1,10 @@
 """Default configuration settings for the Enhanced Typing Assistant."""
 
 # Application paths and information
-APP_NAME = "TypingAssistant"
-APP_VERSION = "2.0.0"
-APP_AUTHOR = "Ryan McGinley"
-APP_WEBSITE = "https://pepes.dev"
+APP_NAME = "Enhanced Typing Assistant"
+APP_VERSION = "1.0.0"
+APP_AUTHOR = "Codeium"
+APP_WEBSITE = "https://codeium.com"
 SUPPORT_EMAIL = "support@pepes.dev"
 GITHUB_REPO = "https://github.com/goodsmash/typing_assistant"
 
@@ -32,29 +32,55 @@ MAX_FONT_SIZE = 48
 # Theme configurations
 THEMES = {
     'light': {
-        'background': '#ffffff',
-        'text': '#000000',
-        'primary': '#007bff',
-        'secondary': '#6c757d',
-        'success': '#28a745',
-        'error': '#dc3545',
-        'warning': '#ffc107',
-        'info': '#17a2b8'
+        'background': '#f0f0f0',
+        'text': '#333333',
+        'primary': '#2196F3',
+        'secondary': '#FFC107',
+        'success': '#4CAF50',
+        'error': '#f44336',
+        'warning': '#FF9800',
+        'info': '#2196F3'
     },
     'dark': {
-        'background': '#1a1a1a',
+        'background': '#121212',
         'text': '#ffffff',
-        'primary': '#0d6efd',
-        'secondary': '#6c757d',
-        'success': '#198754',
-        'error': '#dc3545',
-        'warning': '#ffc107',
-        'info': '#0dcaf0'
+        'primary': '#BB86FC',
+        'secondary': '#03DAC6',
+        'success': '#00C853',
+        'error': '#CF6679',
+        'warning': '#FFB74D',
+        'info': '#64B5F6'
+    },
+    'high_contrast': {
+        'background': '#000000',
+        'text': '#ffffff',
+        'primary': '#ffff00',
+        'secondary': '#00ffff',
+        'success': '#00ff00',
+        'error': '#ff0000',
+        'warning': '#ffa500',
+        'info': '#00ffff'
     }
 }
 
 # Accessibility settings
 ACCESSIBILITY = {
+    'font_families': {
+        'default': 'Arial',
+        'dyslexic': 'OpenDyslexic',
+        'monospace': 'Consolas'
+    },
+    'font_sizes': {
+        'small': 12,
+        'medium': 14,
+        'large': 16,
+        'extra_large': 18
+    },
+    'line_heights': {
+        'compact': 1.2,
+        'normal': 1.5,
+        'relaxed': 1.8
+    },
     'screen_reader_support': True,
     'keyboard_navigation': True,
     'high_contrast_mode': False,
@@ -82,7 +108,14 @@ ERROR_MESSAGES = {
     'account_locked': 'Account locked due to too many failed attempts.',
     'session_expired': 'Session expired. Please log in again.',
     'update_failed': 'Failed to check for updates. Please try again later.',
-    'offline_mode': 'Application is running in offline mode. Some features may be unavailable.'
+    'offline_mode': 'Application is running in offline mode. Some features may be unavailable.',
+    'api_error': 'Error communicating with the API. Please check your internet connection and try again.',
+    'config_error': 'Error loading configuration. Using default settings.',
+    'file_error': 'Error accessing file system. Please check permissions.',
+    'memory_error': 'Insufficient memory. Please close other applications and try again.',
+    'permission_error': 'Permission denied. Please check your access rights.',
+    'timeout_error': 'Operation timed out. Please try again.',
+    'unknown_error': 'An unknown error occurred. Please try again.'
 }
 
 # API configurations for both online and offline modes
@@ -100,6 +133,22 @@ API_CONFIG = {
         'model_path': 'models/local_model',
         'cache_results': True,
         'max_cache_size_mb': 1000
+    },
+    'openai': {
+        'model': 'gpt-4',
+        'temperature': 0.3,
+        'max_tokens': 100,
+        'timeout': 10,
+        'retry_attempts': 3,
+        'retry_delay': 1
+    },
+    'anthropic': {
+        'model': 'claude-2',
+        'temperature': 0.3,
+        'max_tokens': 100,
+        'timeout': 10,
+        'retry_attempts': 3,
+        'retry_delay': 1
     }
 }
 
@@ -114,5 +163,32 @@ FEATURES = {
     'cloud_sync': False,
     'analytics': False,
     'beta_features': False,
-    'offline_mode': True  # Enable offline mode by default
+    'offline_mode': True,  # Enable offline mode by default
+    'text_correction': {
+        'enabled': True,
+        'auto_correct': True,
+        'spell_check': True,
+        'grammar_check': True,
+        'style_check': True,
+        'delay': 200
+    },
+    'accessibility': {
+        'high_contrast': False,
+        'large_text': False,
+        'text_to_speech': False,
+        'keyboard_shortcuts': True,
+        'break_reminders': True
+    },
+    'cognitive_support': {
+        'enabled': True,
+        'word_prediction': True,
+        'context_aware': True,
+        'learning_support': True
+    },
+    'translation': {
+        'enabled': True,
+        'auto_detect': True,
+        'target_language': 'en',
+        'preserve_formatting': True
+    }
 }

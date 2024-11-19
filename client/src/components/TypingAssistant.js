@@ -82,7 +82,7 @@ const TypingAssistant = () => {
                         wpm
                     }
                 });
-            }, 500);
+            }, 200);  
         } else {
             setSuggestions([]);
         }

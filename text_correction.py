@@ -93,6 +93,15 @@ class TextCorrector:
             
             self.cache_misses += 1
             
+            # Quick error detection for badly typed text
+            error_count = sum(1 for word in text.split() if not self.spell_checker.check(word))
+            error_ratio = error_count / len(text.split()) if text.split() else 0
+            
+            # If text is badly typed (>30% error ratio), use aggressive correction
+            if error_ratio > 0.3:
+                severity = "high"
+                mode = "comprehensive"
+                
             # Input validation with detailed error messages
             if not text or not isinstance(text, str):
                 raise ValueError("Invalid input text: Text must be a non-empty string")

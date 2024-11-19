@@ -1,506 +1,335 @@
-import os
 import sys
-import threading
-from datetime import datetime
-from typing import Dict
+import os
 import logging
-import asyncio
-
+from typing import Optional, Dict, Any
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QTextEdit, QPushButton, QLabel,
-    QCheckBox, QProgressBar, QMessageBox, QComboBox, QSpinBox,
-    QAction, QFileDialog, QStatusBar, QGroupBox, QGridLayout, QHBoxLayout, QVBoxLayout,
-    QDialog, QLineEdit, QDialogButtonBox
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
+    QTextEdit, QLabel, QPushButton, QStatusBar,
+    QComboBox, QSpinBox, QCheckBox, QMessageBox,
+    QTabWidget, QApplication
 )
-from PyQt5.QtCore import Qt, QTimer, QSettings, pyqtSignal, QObject, QThread
-from PyQt5.QtGui import QFont
-
+from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
+from PyQt5.QtGui import QFont, QTextCursor
 import openai
-from dotenv import load_dotenv
-import pyttsx3
-import hashlib
+from openai import OpenAI
+from text_correction import TextCorrectionWorker
+from accessibility import AccessibilityManager
+from typing_assistant.services.ai_service import AIServiceManager
+from typing_assistant.ui.usage_widget import UsageWidget
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load environment variables from .env file
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-class TextCorrectionWorker(QObject):
-    """Worker class that performs text correction using OpenAI's GPT-4 API in a separate thread."""
-    finished = pyqtSignal()
-    error_occurred = pyqtSignal(str)
-    result_ready = pyqtSignal(str)
-
-    def __init__(self, text: str, mode: str, severity: str, language: str) -> None:
-        super().__init__()
-        self.text = text
-        self.mode = mode
-        self.severity = severity
-        self.language = language
-
-    def run(self) -> None:
-        """Perform text correction using the OpenAI API."""
-        try:
-            # Build context-aware prompt based on correction mode and severity
-            mode_contexts = {
-                'Cognitive Assistance': "You are an expert in assisting users with cognitive challenges.",
-                'Motor Difficulty': "You are an expert in correcting text from users with motor control difficulties.",
-                'Dyslexia-Friendly': "You are an expert in assisting users with dyslexia and similar reading/writing challenges.",
-                'Learning Support': "You are an expert in helping language learners improve their writing.",
-                'Standard': "You are an expert in understanding and correcting mistyped text."
-            }
-
-            severity_contexts = {
-                'Low': "Make minimal corrections while preserving the original text structure.",
-                'Medium': "Balance correction with preserving original intent.",
-                'High': "Thoroughly correct errors while maintaining meaning.",
-                'Maximum': "Provide comprehensive correction and improvement suggestions."
-            }
-
-            base_prompt = (
-                f"{mode_contexts.get(self.mode, mode_contexts['Standard'])} "
-                f"Working in {self.language}, with {self.severity.lower()} correction level. "
-                f"{severity_contexts.get(self.severity, '')} "
-                f"Please correct the following text:\n\n{self.text}"
-            )
-
-            # Call the OpenAI API with the constructed prompt
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "You are a specialized text correction assistant focused on helping users with various challenges."},
-                    {"role": "user", "content": base_prompt}
-                ],
-                temperature=0.3,
-                max_tokens=1000
-            )
-
-            corrected_text = response['choices'][0]['message']['content'].strip()
-            self.result_ready.emit(corrected_text)
-        except openai.error.OpenAIError as api_error:
-            self.error_occurred.emit(f"OpenAI API Error: {str(api_error)}")
-        except Exception as general_error:
-            self.error_occurred.emit(f"An unexpected error occurred: {str(general_error)}")
-        finally:
-            self.finished.emit()
-
-class AccessibilityManager:
-    def __init__(self, parent):
-        self.parent = parent
-        self.settings_dict = {
-            'live_translation': True
-        }
-        self.translation_worker = TranslationWorker()
-        self.translation_widget = QWidget()
-        self.translation_layout = QVBoxLayout(self.translation_widget)
-        self.translation_label = QLabel("Translation")
-        self.translation_layout.addWidget(self.translation_label)
-
-    class TranslationWorker(QObject):
-        finished = pyqtSignal()
-        error_occurred = pyqtSignal(str)
-        result_ready = pyqtSignal(str)
-
-        def __init__(self):
-            super().__init__()
-
-        async def translate_text(self, text):
-            try:
-                # Simulate translation process
-                await asyncio.sleep(1)
-                translated_text = f"Translated: {text}"
-                self.result_ready.emit(translated_text)
-            except Exception as e:
-                self.error_occurred.emit(f"Error translating text: {str(e)}")
-            finally:
-                self.finished.emit()
-
 class TypingAssistant(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.settings = QSettings('TypingAssistant', 'Settings')
-        self.load_settings()
-        self.correction_history = []
-        self.is_processing = False
-        self.current_language = "English"
-        self.correction_mode = "Standard"
-        self.severity_level = "High"
+    """Main window for the Enhanced Typing Assistant."""
+    
+    def __init__(self, parent: Optional[QWidget] = None):
+        """Initialize the typing assistant."""
+        super().__init__(parent)
+        self.ai_service = AIServiceManager(
+            openai_api_key=os.getenv('OPENAI_API_KEY'),
+            anthropic_api_key=os.getenv('ANTHROPIC_API_KEY')
+        )
+        self.offline_mode = not (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY')))
+        self.correction_worker = None
+        self.correction_timer = QTimer()
+        self.correction_timer.setInterval(200)  # 200ms delay
+        self.correction_timer.timeout.connect(self.on_text_changed)
+        self.accessibility_manager = AccessibilityManager()
         self.setup_ui()
-        
-        # Initialize text-to-speech engine
-        self.tts_engine = pyttsx3.init()
-        self.tts_engine.setProperty('rate', 150)
+        self.setup_connections()
+        self.initialize_correction_worker()
 
-        # Initialize accessibility manager
-        self.accessibility_manager = AccessibilityManager(self)
-
-        # Set up error handling
-        self.setup_error_handling()
-
-        # Start translation worker thread
-        self.translation_thread = QThread()
-        self.accessibility_manager.translation_worker.moveToThread(self.translation_thread)
-        self.translation_thread.start()
-
-    def load_settings(self):
-        """Load user settings"""
-        self.font_size = self.settings.value('font_size', 14, type=int)
-        self.high_contrast = self.settings.value('high_contrast', False, type=bool)
-        self.auto_correct = self.settings.value('auto_correct', True, type=bool)
-        self.correction_delay = self.settings.value('correction_delay', 2000, type=int)
-        self.voice_speed = self.settings.value('voice_speed', 150, type=int)
-        
     def setup_ui(self):
-        """Set up the main UI"""
-        self.setWindowTitle('Enhanced Typing Assistant')
-        self.resize(1200, 800)
-        
-        # Create central widget and main layout
+        """Set up the user interface."""
+        self.setWindowTitle("Enhanced Typing Assistant")
+        self.setMinimumSize(1000, 700)
+
+        # Create central widget and layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
+
+        # Create tab widget
+        tab_widget = QTabWidget()
         
-        # Settings panel
-        settings_group = QGroupBox("Settings")
-        settings_layout = QGridLayout()
+        # Main editing tab
+        editing_widget = QWidget()
+        editing_layout = QVBoxLayout(editing_widget)
         
-        # Language selection
-        language_label = QLabel("Language:")
-        self.language_combo = QComboBox()
-        self.language_combo.addItems(["English", "Spanish", "French", "German"])
-        settings_layout.addWidget(language_label, 0, 0)
-        settings_layout.addWidget(self.language_combo, 0, 1)
-        
-        # Mode selection
-        mode_label = QLabel("Mode:")
-        self.mode_combo = QComboBox()
-        self.mode_combo.addItems([
-            "Standard",
-            "Cognitive Assistance",
-            "Motor Difficulty",
-            "Dyslexia-Friendly",
-            "Learning Support"
-        ])
-        settings_layout.addWidget(mode_label, 1, 0)
-        settings_layout.addWidget(self.mode_combo, 1, 1)
-        
-        # Severity level
-        severity_label = QLabel("Correction Level:")
-        self.severity_combo = QComboBox()
-        self.severity_combo.addItems(["Low", "Medium", "High", "Maximum"])
-        settings_layout.addWidget(severity_label, 2, 0)
-        settings_layout.addWidget(self.severity_combo, 2, 1)
-        
-        # Auto-correct checkbox
-        self.auto_correct_cb = QCheckBox("Auto-correct")
-        self.auto_correct_cb.setChecked(self.auto_correct)
-        settings_layout.addWidget(self.auto_correct_cb, 3, 0)
-        
-        settings_group.setLayout(settings_layout)
-        layout.addWidget(settings_group)
-        
-        # Text areas
-        text_layout = QHBoxLayout()
-        
-        # Input area
-        input_group = QGroupBox("Input Text")
-        input_layout = QVBoxLayout()
+        # Create text areas
         self.input_text = QTextEdit()
         self.input_text.setPlaceholderText("Type or paste your text here...")
-        self.input_text.textChanged.connect(self.on_text_changed)
-        input_layout.addWidget(self.input_text)
-        input_group.setLayout(input_layout)
-        text_layout.addWidget(input_group)
-        
-        # Output area
-        output_group = QGroupBox("Corrected Text")
-        output_layout = QVBoxLayout()
         self.output_text = QTextEdit()
-        self.output_text.setReadOnly(True)
         self.output_text.setPlaceholderText("Corrected text will appear here...")
-        output_layout.addWidget(self.output_text)
+        self.output_text.setReadOnly(True)
+
+        # Create controls
+        controls_layout = QHBoxLayout()
         
-        # Text-to-speech button
-        self.tts_button = QPushButton("Read Aloud")
-        self.tts_button.clicked.connect(self.read_text_aloud)
-        output_layout.addWidget(self.tts_button)
+        # Language selection
+        self.language_combo = QComboBox()
+        self.language_combo.addItems(["English", "Spanish", "French", "German"])
         
-        output_group.setLayout(output_layout)
-        text_layout.addWidget(output_group)
+        # Task selection
+        self.task_combo = QComboBox()
+        self.task_combo.addItems([
+            "Grammar", "Spelling", "Style",
+            "Rewrite", "Analysis", "Summary"
+        ])
         
-        layout.addLayout(text_layout)
+        # Model selection
+        self.model_combo = QComboBox()
+        self.model_combo.addItems(self.ai_service.get_available_models())
         
-        # Status bar
-        self.status_bar = self.statusBar()
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        self.status_bar.addPermanentWidget(self.progress_bar)
+        # Quality selection
+        self.quality_combo = QComboBox()
+        self.quality_combo.addItems(["Standard", "High"])
         
-        # Correction timer
-        self.correction_timer = QTimer()
-        self.correction_timer.setSingleShot(True)
-        self.correction_timer.timeout.connect(self.perform_correction)
+        # Cost sensitivity
+        self.cost_sensitive = QCheckBox("Cost Sensitive")
         
-        # Add translation widget to right panel
-        self.right_panel = QWidget()
-        self.right_layout = QVBoxLayout(self.right_panel)
-        self.right_layout.addWidget(self.accessibility_manager.translation_widget)
-        layout.addWidget(self.right_panel)
+        # Auto-correct toggle
+        self.auto_correct = QCheckBox("Auto-correct")
+        self.auto_correct.setChecked(True)
+
+        # Add controls to layout
+        controls_layout.addWidget(QLabel("Language:"))
+        controls_layout.addWidget(self.language_combo)
+        controls_layout.addWidget(QLabel("Task:"))
+        controls_layout.addWidget(self.task_combo)
+        controls_layout.addWidget(QLabel("Model:"))
+        controls_layout.addWidget(self.model_combo)
+        controls_layout.addWidget(QLabel("Quality:"))
+        controls_layout.addWidget(self.quality_combo)
+        controls_layout.addWidget(self.cost_sensitive)
+        controls_layout.addWidget(self.auto_correct)
+        controls_layout.addStretch()
+
+        # Create model info display
+        self.model_info = QTextEdit()
+        self.model_info.setReadOnly(True)
+        self.model_info.setMaximumHeight(100)
+        self.update_model_info()
+
+        # Create accessibility controls
+        accessibility_layout = QHBoxLayout()
+        self.high_contrast = QCheckBox("High Contrast")
+        self.large_text = QCheckBox("Large Text")
+        self.dyslexic_font = QCheckBox("Dyslexic Font")
         
-        # Apply styles
-        self.apply_styles()
+        accessibility_layout.addWidget(self.high_contrast)
+        accessibility_layout.addWidget(self.large_text)
+        accessibility_layout.addWidget(self.dyslexic_font)
+        accessibility_layout.addStretch()
+
+        # Add all elements to editing layout
+        editing_layout.addLayout(controls_layout)
+        editing_layout.addWidget(self.model_info)
+        editing_layout.addWidget(self.input_text)
+        editing_layout.addWidget(self.output_text)
+        editing_layout.addLayout(accessibility_layout)
         
+        # Create usage widget
+        self.usage_widget = UsageWidget()
+        
+        # Add tabs
+        tab_widget.addTab(editing_widget, "Editor")
+        tab_widget.addTab(self.usage_widget, "Usage Statistics")
+        
+        # Add tab widget to main layout
+        layout.addWidget(tab_widget)
+
+        # Create status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.update_status()
+
+    def setup_connections(self):
+        """Set up signal connections."""
+        self.input_text.textChanged.connect(self.on_text_changed)
+        self.high_contrast.stateChanged.connect(self.update_accessibility)
+        self.large_text.stateChanged.connect(self.update_accessibility)
+        self.dyslexic_font.stateChanged.connect(self.update_accessibility)
+        self.language_combo.currentTextChanged.connect(self.update_settings)
+        self.task_combo.currentTextChanged.connect(self.update_task)
+        self.model_combo.currentTextChanged.connect(self.update_model_info)
+        self.quality_combo.currentTextChanged.connect(self.update_settings)
+        self.cost_sensitive.stateChanged.connect(self.update_settings)
+        self.auto_correct.stateChanged.connect(self.update_settings)
+
+    def initialize_correction_worker(self):
+        """Initialize the text correction worker."""
+        if hasattr(self, 'correction_thread'):
+            self.correction_thread.quit()
+            self.correction_thread.wait()
+
+        self.correction_thread = QThread()
+        self.correction_worker = TextCorrectionWorker()
+        self.correction_worker.moveToThread(self.correction_thread)
+        
+        # Connect signals
+        self.correction_worker.result_ready.connect(self.on_correction_finished)
+        self.correction_worker.error_occurred.connect(self.on_correction_error)
+        self.correction_thread.start()
+
     def on_text_changed(self):
-        """Handle text changes"""
-        if self.auto_correct_cb.isChecked():
-            self.correction_timer.stop()
-            self.correction_timer.start(self.correction_delay)
-            
-        try:
-            text = self.input_text.toPlainText()
-            if text and self.accessibility_manager.settings_dict['live_translation']:
-                asyncio.create_task(self.accessibility_manager.translation_worker.translate_text(text))
-        except Exception as e:
-            self.handle_error(f"Error processing text: {str(e)}")
-            
-    def perform_correction(self):
-        """Perform text correction"""
-        if self.is_processing:
+        """Handle text input changes."""
+        if not self.auto_correct.isChecked():
             return
-            
+
+        if self.correction_timer.isActive():
+            self.correction_timer.stop()
+        
+        self.correction_timer.start()
+
+    async def process_text(self):
+        """Process the input text."""
+        if not self.auto_correct.isChecked():
+            return
+
         text = self.input_text.toPlainText()
         if not text:
             return
+
+        try:
+            if self.offline_mode:
+                await self.run_offline_correction(text)
+            else:
+                await self.run_ai_correction(text)
+        except Exception as e:
+            self.show_error(f"Error processing text: {str(e)}")
+
+    async def run_ai_correction(self, text: str):
+        """Run AI-powered text correction."""
+        try:
+            quality = self.quality_combo.currentText().lower()
+            task = self.task_combo.currentText().lower()
+            model = self.model_combo.currentText()
+            result, usage_info = await self.ai_service.process_text(
+                text,
+                task=task,
+                model=model,
+                quality=quality
+            )
             
-        self.is_processing = True
-        self.progress_bar.setVisible(True)
-        self.status_bar.showMessage("Correcting text...")
-        
-        # Create and start correction thread
-        self.correction_thread = QThread()
-        self.correction_worker = TextCorrectionWorker(
-            text,
-            self.mode_combo.currentText(),
-            self.severity_combo.currentText(),
-            self.language_combo.currentText()
-        )
-        
-        self.correction_worker.moveToThread(self.correction_thread)
-        self.correction_thread.started.connect(self.correction_worker.run)
-        self.correction_worker.finished.connect(self.correction_thread.quit)
-        self.correction_worker.finished.connect(self.correction_worker.deleteLater)
-        self.correction_thread.finished.connect(self.correction_thread.deleteLater)
-        self.correction_worker.result_ready.connect(self.handle_correction)
-        self.correction_worker.error_occurred.connect(self.handle_error)
-        
-        self.correction_thread.start()
-        
-    def handle_correction(self, corrected_text):
-        """Handle corrected text"""
+            # Update usage statistics
+            self.usage_widget.update_usage(self.ai_service.get_usage_statistics())
+            
+            # Update the output text
+            self.output_text.setText(result)
+            
+        except Exception as e:
+            logger.error(f"AI correction error: {str(e)}")
+            self.show_error(f"AI correction failed: {str(e)}")
+            if self.correction_worker:
+                await self.run_offline_correction(text)
+
+    async def run_offline_correction(self, text: str):
+        """Run offline text correction."""
+        try:
+            # Basic spell checking and grammar correction
+            self.correction_worker.correct_text(text)
+        except Exception as e:
+            logger.error(f"Offline correction error: {str(e)}")
+            self.show_error(f"Offline correction failed: {str(e)}")
+
+    def on_correction_finished(self, corrected_text: str):
+        """Handle completed text correction."""
         self.output_text.setPlainText(corrected_text)
-        self.progress_bar.setVisible(False)
-        self.status_bar.showMessage("Correction complete")
-        self.is_processing = False
-        
-    def handle_error(self, error_message):
-        """Handle correction error"""
-        self.progress_bar.setVisible(False)
-        self.status_bar.showMessage("Correction failed")
-        self.is_processing = False
-        QMessageBox.warning(self, "Error", error_message)
-        
-    def read_text_aloud(self):
-        """Read corrected text using text-to-speech"""
-        text = self.output_text.toPlainText()
-        if text:
-            def speak():
-                self.tts_engine.say(text)
-                self.tts_engine.runAndWait()
-            
-            threading.Thread(target=speak, daemon=True).start()
-            
-    def apply_styles(self):
-        """Apply application styles"""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f0f0f0;
-            }
-            QGroupBox {
-                font-weight: bold;
-                border: 1px solid #cccccc;
-                border-radius: 6px;
-                margin-top: 6px;
-                padding-top: 10px;
-            }
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                border: none;
-                padding: 5px 15px;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #1976D2;
-            }
-            QTextEdit {
-                border: 1px solid #cccccc;
-                border-radius: 4px;
-                padding: 5px;
-                background-color: white;
-            }
-        """)
-        
-    def create_menu_bar(self):
-        """Create the application menu bar"""
-        menubar = self.menuBar()
-        
-        # File menu
-        file_menu = menubar.addMenu('&File')
-        
-        new_action = QAction('New', self)
-        new_action.setShortcut('Ctrl+N')
-        new_action.triggered.connect(self.new_document)
-        
-        settings_action = QAction('Settings', self)
-        settings_action.triggered.connect(self.show_api_settings)
-        
-        exit_action = QAction('Exit', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.triggered.connect(self.close)
-        
-        file_menu.addAction(new_action)
-        file_menu.addAction(settings_action)
-        file_menu.addSeparator()
-        file_menu.addAction(exit_action)
-        
-        # Help menu
-        help_menu = menubar.addMenu('&Help')
-        
-        about_action = QAction('About', self)
-        about_action.triggered.connect(self.show_about)
-        help_menu.addAction(about_action)
-    
-    def new_document(self):
-        """Clear the text areas"""
-        self.input_text.clear()
-        self.output_text.clear()
-    
-    def show_api_settings(self):
-        """Show API settings dialog"""
-        dialog = QDialog(self)
-        dialog.setWindowTitle("API Settings")
-        dialog.setModal(True)
-        layout = QVBoxLayout()
-        
-        # API Key input
-        key_group = QGroupBox("API Key")
-        key_layout = QVBoxLayout()
-        key_input = QLineEdit()
-        key_input.setEchoMode(QLineEdit.Password)
-        if self.api_key:
-            key_input.setText(self.api_key)
-        key_layout.addWidget(key_input)
-        key_group.setLayout(key_layout)
-        layout.addWidget(key_group)
-        
-        # Test connection button
-        test_button = QPushButton("Test Connection")
-        test_button.clicked.connect(lambda: self.test_api_connection(key_input.text()))
-        layout.addWidget(test_button)
-        
-        # Dialog buttons
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
-        button_box.accepted.connect(
-            lambda: self.save_api_settings(key_input.text(), dialog)
-        )
-        button_box.rejected.connect(dialog.reject)
-        layout.addWidget(button_box)
-        
-        dialog.setLayout(layout)
-        dialog.exec_()
-    
-    def test_api_connection(self, api_key: str):
-        """Test the API connection"""
-        if api_key:
-            QMessageBox.information(
-                self,
-                "Connection Test",
-                "API connection successful!"
-            )
-        else:
-            QMessageBox.warning(
-                self,
-                "Connection Test",
-                "Please enter an API key first."
-            )
-    
-    def save_api_settings(self, api_key: str, dialog: QDialog):
-        """Save API settings"""
+        self.update_status("Text correction complete")
+
+    def on_correction_error(self, error_msg: str):
+        """Handle text correction errors."""
+        logger.error(f"Correction error: {error_msg}")
+        self.show_error(f"Correction error: {error_msg}")
+
+    def update_accessibility(self):
+        """Update accessibility settings."""
         try:
-            if api_key:
-                key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-                self.settings.setValue('api_key_hash', key_hash)
-                self.api_key = api_key
-            dialog.accept()
+            settings = {
+                'high_contrast': self.high_contrast.isChecked(),
+                'large_text': self.large_text.isChecked(),
+                'dyslexic_font': self.dyslexic_font.isChecked()
+            }
+            self.accessibility_manager.apply_settings(self, settings)
+            self.update_status("Accessibility settings updated")
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to save settings: {str(e)}")
-    
-    def show_about(self):
-        """Show about dialog"""
-        about_text = """
-        <h2>Enhanced Typing Assistant</h2>
-        <p>Version 1.0</p>
-        <p>A powerful typing assistant with AI-powered text correction.</p>
-        <p>Features:</p>
-        <ul>
-            <li>Real-time text correction</li>
-            <li>Multiple correction modes</li>
-            <li>API integration</li>
-        </ul>
-        """
-        QMessageBox.about(self, "About", about_text)
-    
-    def setup_error_handling(self):
-        """Set up error handling and logging."""
+            logger.error(f"Error updating accessibility settings: {e}")
+            self.show_error("Error updating accessibility settings")
+
+    def update_settings(self):
+        """Update application settings."""
         try:
-            # Configure error logging
-            self.error_log = []
+            # Update correction worker settings
+            settings = {
+                'language': self.language_combo.currentText().lower(),
+                'quality': self.quality_combo.currentText().lower(),
+                'auto_correct': self.auto_correct.isChecked(),
+                'cost_sensitive': self.cost_sensitive.isChecked()
+            }
+            if self.correction_worker:
+                self.correction_worker.update_settings(settings)
+            self.update_status("Settings updated")
+        except Exception as e:
+            logger.error(f"Error updating settings: {e}")
+            self.show_error("Error updating settings")
+
+    def update_task(self):
+        """Update recommended models for the selected task."""
+        task = self.task_combo.currentText().lower()
+        recommended_models = self.ai_service.get_recommended_models(task)
+        
+        # Update model combo box while preserving current selection if valid
+        current_model = self.model_combo.currentText()
+        self.model_combo.clear()
+        self.model_combo.addItems(recommended_models)
+        
+        if current_model in recommended_models:
+            self.model_combo.setCurrentText(current_model)
+        
+        self.update_model_info()
+        self.update_status(f"Updated recommended models for {task}")
+
+    def update_model_info(self):
+        """Update the model information display."""
+        try:
+            model = self.model_combo.currentText()
+            info = self.ai_service.get_model_info(model)
             
-            # Set up error handlers
-            def handle_exception(exc_type, exc_value, exc_traceback):
-                logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
-                self.handle_error(str(exc_value))
-                
-            sys.excepthook = handle_exception
+            # Format model information
+            text = f"Model: {model}\n"
+            text += "Strengths: " + ", ".join(info['characteristics']['strengths']) + "\n"
+            text += f"Response Time: {info['characteristics']['avg_response_time']}s | "
+            text += f"Max Tokens: {info['limits']['max_tokens']} | "
+            text += f"Cost: ${info['pricing']['output_price_per_1k']:.4f}/1K tokens"
+            
+            self.model_info.setText(text)
             
         except Exception as e:
-            logger.error(f"Error setting up error handling: {e}")
-            
-    def handle_error(self, error_message):
-        """Handle and display errors to the user."""
+            logger.error(f"Error updating model info: {str(e)}")
+            self.model_info.setText("Model information unavailable")
+
+    def update_status(self, message: str = "Ready"):
+        """Update the status bar message."""
+        mode = "Offline" if self.offline_mode else "Online"
+        self.status_bar.showMessage(f"{mode} Mode | {message}")
+
+    def show_error(self, message: str):
+        """Show error message to user."""
+        self.status_bar.showMessage(f"Error: {message}")
+        QMessageBox.warning(self, "Error", message)
+
+    def closeEvent(self, event):
+        """Handle application closure."""
         try:
-            logger.error(error_message)
-            self.error_log.append({
-                'timestamp': datetime.now(),
-                'message': error_message
-            })
-            
-            # Show error in status bar
-            self.statusBar().showMessage(f"Error: {error_message}", 5000)
-            
-            # Log to file if serious error
-            if 'critical' in error_message.lower() or 'fatal' in error_message.lower():
-                with open('error_log.txt', 'a') as f:
-                    f.write(f"{datetime.now()}: {error_message}\n")
-                    
+            if hasattr(self, 'correction_thread'):
+                self.correction_thread.quit()
+                self.correction_thread.wait()
+            event.accept()
         except Exception as e:
-            logger.error(f"Error in error handler: {e}")
-    
+            logger.error(f"Error during closure: {e}")
+            event.accept()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = TypingAssistant()
