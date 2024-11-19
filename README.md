@@ -1,108 +1,112 @@
-# Enhanced Typing Assistant
+# Enhanced Typing Assistant with Multi-Model AI Support
 
-A modern, accessible typing assistant with AI-powered features and real-time translation support.
+A comprehensive typing assistance tool that leverages multiple AI models for advanced text correction, style enhancement, and cognitive support. This enhanced version includes intelligent model selection, usage tracking, and accessibility features.
 
 ## Features
 
-- Real-time text suggestions using GPT-4
-- Live translation support for multiple languages
-- Cognitive accessibility features
-- Dark/Light mode support
-- Text-to-speech capabilities
-- High contrast mode for visual accessibility
-- WebSocket-based real-time updates
-- Modern, responsive UI built with React and Material-UI
+### Advanced AI Integration
+- Multiple AI Model Support:
+  - OpenAI GPT-4 Turbo and GPT-3.5 Turbo
+  - Anthropic Claude-3 Opus and Sonnet
+- Task-Specific Model Selection
+- Intelligent Cost Management
+- Usage Statistics and Analytics
 
-## Architecture
+### Task Support
+- Grammar Correction
+- Spelling Check
+- Style Enhancement
+- Text Rewriting
+- Content Analysis
+- Text Summarization
 
-The application uses a three-tier architecture:
+### Accessibility Features
+- High Contrast Mode
+- Large Text Support
+- Dyslexic-Friendly Font
+- Screen Reader Compatibility
 
-1. Frontend (React)
-   - Material-UI components
-   - Framer Motion animations
-   - WebSocket communication
-   - Responsive design
-   - Accessibility features
+### User Interface
+- Modern, Intuitive Design
+- Real-time Model Information
+- Usage Statistics Dashboard
+- Task-Specific Controls
 
-2. Node.js Backend
-   - Express.js server
-   - Socket.IO for real-time communication
-   - API endpoints for translation
-   - Proxy to Python backend
+## Technical Requirements
 
-3. Python Backend
-   - GPT-4 integration
-   - Translation services
-   - Cognitive support features
-   - Text analysis
-
-## Setup
-
-### Prerequisites
-
-- Node.js 16+
-- Python 3.12+
-- OpenAI API key
-
-### Installation
-
-1. Install frontend dependencies:
-```bash
-cd frontend
-npm install
+### Dependencies
+```
+openai>=1.0.0
+anthropic>=0.3.0
+PyQt5>=5.15.0
+tiktoken>=0.5.0
+thefuzz>=0.19.0
+python-dotenv>=0.19.0
 ```
 
-2. Install backend dependencies:
+### API Keys Required
+- OpenAI API Key
+- Anthropic API Key
+
+## Installation
+
+1. Clone the repository:
 ```bash
-cd backend
-npm install
+git clone [repository-url]
+cd typing-assistant
 ```
 
-3. Install Python dependencies:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create a .env file in the root directory:
-```
-OPENAI_API_KEY=your_api_key_here
-```
-
-### Running the Application
-
-1. Start the Python backend:
+3. Set up environment variables:
 ```bash
-python app.py
+# Create .env file
+OPENAI_API_KEY=your_openai_key_here
+ANTHROPIC_API_KEY=your_anthropic_key_here
 ```
 
-2. Start the Node.js backend:
+4. Run the application:
 ```bash
-cd backend
-npm start
+python main.py
 ```
 
-3. Start the React frontend:
-```bash
-cd frontend
-npm start
-```
+## Usage
 
-The application will be available at http://localhost:3000
+1. Select your task type (Grammar, Style, Rewrite, etc.)
+2. Choose your preferred AI model or let the system recommend one
+3. Type or paste your text
+4. Enable auto-correct for real-time corrections
+5. Monitor usage and costs in the Statistics tab
 
-## Development
+## Model Selection Guide
 
-- Frontend development server runs on port 3000
-- Node.js backend runs on port 5000
-- Python backend communicates through stdin/stdout
+### GPT-4 Turbo
+- Best for: Complex analysis, technical writing
+- Strengths: Advanced reasoning, context understanding
+- Cost: Premium pricing
+
+### GPT-3.5 Turbo
+- Best for: Quick corrections, basic tasks
+- Strengths: Fast, cost-effective
+- Cost: Budget-friendly
+
+### Claude-3 Opus
+- Best for: Long documents, research writing
+- Strengths: Large context window, analytical tasks
+- Cost: Premium pricing
+
+### Claude-3 Sonnet
+- Best for: General writing tasks
+- Strengths: Good balance of quality and speed
+- Cost: Moderate pricing
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+Contributions are welcome! Please feel free to submit pull requests.
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
